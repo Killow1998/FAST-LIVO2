@@ -50,7 +50,7 @@ The [**FAST-Calib**](https://github.com/hku-mars/FAST-Calib) toolkit is recommen
 
 This branch uses one ROS-independent C++ Mapper with thin Noetic and Humble adapters. See [build and deployment](docs/build.md) and [N3M integration evidence](docs/n3m_frontend.md). The separate ROS Vikit package and a global Sophus installation are no longer required; compatible numerical/camera sources are private dependencies.
 
-Simulation mapping and MID360 map continuation/reload have passed the recorded tests. The tested Avia continuation and saved-map recovery cases still have failures; the validation record separates these limits from successful frontend integration.
+Recorded four-core tests cover simulation mapping and Avia/MID360 continuation with cross-ROS reload. Avia continuation requires the accompanying N3M tracking repair and regenerated maps; historical corrupted maps are not repaired automatically. The validation record includes accuracy, resource costs and remaining hardware limits.
 
 ## 3. Build
 

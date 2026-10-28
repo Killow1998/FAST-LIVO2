@@ -1,6 +1,6 @@
 # N3M frontend integration — 2026-10-28
 
-One local `main` now contains a ROS-independent C++ Mapper and thin native Noetic/Humble nodes. Both builds and N3M mapping are verified. The MID360 partial-map continuation and cross-ROS reload pass this fixture's 10 cm gate. **The tested Avia continuation/reload cases do not pass; this is not a universal localization qualification.** The installed programs and navigation frozen libraries were not replaced.
+One local `main` contains a ROS-independent C++ Mapper and thin native Noetic/Humble nodes. The tested Avia and MID360 mapping, continuation and regenerated-map reload paths pass the four-core fixtures. **Continuation requires the N3M shared-core repair `eb4421c`; previously corrupted maps must be rebuilt from raw input.** The installed programs and navigation frozen libraries were not replaced.
 
 ## Architecture and input contract
 
@@ -53,27 +53,58 @@ The stationary measurement window is wall seconds 130–400. Original growth was
 
 The first 24 seconds create a partial map, then the complete route extends it. Every stage uses **the same map-to-truth transform obtained from the partial-map frontend's initial pose**; reload is never independently realigned.
 
-| Sensor / stage | Maximum error | Result |
-| --- | ---: | --- |
-| MID360 partial map | 0.57 cm | Pass |
-| MID360 continuation | 1.66 cm | Pass |
-| MID360 Humble localization from Noetic's saved map | 2.00 cm | Pass |
-| Avia normal-distance partial map | 0.70 cm | Pass |
-| Avia normal-distance continuation | 24.90 cm | Accuracy fails |
-| Avia normal-distance Humble reload | 55.86 cm | Accuracy fails |
-| Avia near-wall partial map | 0.70 cm | Pass |
-| Avia near-wall continuation | 23.44 cm | Accuracy fails |
-| Avia near-wall Humble reload | 16.24 m | Wrong lock; fails |
-| Same Avia map and paired input, Noetic reload | 16.24 m | Wrong lock reproduced |
+The frozen backend failed before this repair: normal-distance Avia continuation/reload reached 24.90/55.86 cm; near-wall continuation reached 23.44 cm and reload incorrectly locked at the other corridor end, 16.24 m away. These failures remain in `persistence_before_n3m_repair` in the machine record.
 
-Normal-distance Avia continuation/reload exceed 10 cm in 46.6% / 50.9% of outputs. Near-wall Avia continuation exceeds 10 cm in 44.5% of outputs. Reload locks near the other corridor end at about 100.7 s and returns to the starting region at about 103.6 s. Both ROS versions reproduce the failure; Humble conversion alone cannot explain it. The visual frontend itself remains below 6 cm, while N3M uses LiDAR geometry. Repeated/weak geometry is a working explanation, not a proven complete root cause. N3M production algorithms and thresholds were not changed for this port.
+### Matched geometry repair in N3M
 
-Next N3M work should isolate the incorrect recovery candidate and tracking constraints using this saved map, paired input and fixed-frame score. Do not hide the failure with a fresh alignment, omit the segment, or describe clean file I/O as reliable localization.
+GICP gives each prepared plane covariance the spectrum `(epsilon, 1, 1)`. Two aligned planes therefore contribute normal stiffness `1/(2*epsilon)` and tangential stiffness `1/2`. Tangential regularization keeps the numerical solve well conditioned; it does not make corridor sliding observable. The former update could turn that numerical stiffness into a persistent map correction.
+
+The shared tracker now uses the **admitted correspondences'** translation Hessian, removes `0.5 * num_inliers * I`, and normalizes by `1/(2*epsilon) - 0.5`. It transports this support into the prediction frame and preserves the frontend translation along directions with less support than the existing normal-neighbour count. Rotation is unchanged. The altered pose is evaluated against the selected target with the same metric, correspondence radius and acceptance gates. Recovery keeps the selected target alive through this check. This is a translation-support rule, not a complete posterior uncertainty calibration.
+
+The change adds 67 core/logging lines, one private mathematical helper and one asynchronous diagnostic field. It adds no thread, cache, dependency, public parameter or ROS-specific algorithm. The initial global search is unchanged. Projection time is included in registration timing; optimizer stage records remain available.
+
+Plane-only registration and a six-DoF projection were rejected by their recorded probes (approximately 71 and 86 cm peaks). Source-only translation support initially passed frozen pairs but failed raw frontend replay with approximately 0.9 m jumps: a newly visible surface may be absent from the reference map. Only matched geometry is retained in the implementation.
+
+### Final native-node matrix
+
+Both ROS adapters replay the original LiDAR, IMU and images through the unchanged final FAST-LIVO2 binaries. Noetic runs in its Focal Docker environment; Humble runs natively. Atlas uses the current production default, enabled. Four cases per input cover both continuation directions and both cross-ROS reload directions. The values are maximum position errors in cm.
+
+| Input | Noetic continuation | Humble reload of Noetic map | Humble continuation | Noetic reload of Humble map |
+| --- | ---: | ---: | ---: | ---: |
+| Avia, normal distance | 7.79 | 8.02 | 7.99 | 7.51 |
+| Avia, near wall | 5.92 | 5.04 | 5.78 | 5.32 |
+| MID360 | 1.66 | 2.00 | 1.79 | 1.77 |
+
+All 12 complete cleanly with full output coverage, save/reload success and no output above 10 cm. The near-wall angular peak reaches 2.59 degrees; the 10 cm check measures trajectory position, not every map surface or sub-degree attitude accuracy. The final Humble continuation plus five-minute hold produces 4,065 outputs, peaks at 7.99 cm and saves in 0.40 s. The original 14 fixed positions retain all 4,088 outputs, first lock at frame 4 and a 2.48 cm peak. Two independent motion routes retain 2,232/3,662 outputs and their recovery points, with peaks of 7.94/3.25 cm. The first motion route's peak changes by about +0.04 mm versus the prior baseline; the other is unchanged to numerical precision.
+
+### Same-input ablation and resource cost
+
+The causal comparison disables only the new projection in an experimental library; it does not add a product switch. Both runs consume identical frozen frontend packets, the same original partial map and parameters, with four cores.
+
+| Metric | Projection disabled | Final repair |
+| --- | ---: | ---: |
+| Position maximum | 24.90 cm | 7.79 cm |
+| Position RMSE | 9.64 cm | 4.00 cm |
+| Outputs above 10 cm | 46.9% | 0% |
+| Output frames | 1,051 | 1,061 |
+| Angular maximum | 0.617 degrees | 0.751 degrees |
+| Angular RMSE | 0.237 degrees | 0.173 degrees |
+| N3M replay CPU | 49.78 s | 52.28 s |
+
+The added pose check costs approximately 5% CPU in this pair. Angular RMSE improves, but its peak increases by 0.134 degrees; this is not a claim that every individual metric improves.
+
+Across the final 12 raw-input runs, N3M uses 0.224–0.278 CPU seconds/input second during localization and 0.372–0.545 during continuation. Its peak RSS including save is 144–258 MiB. Frontend use is 0.178–0.214 cores, with Noetic/Humble peaks up to 230/312 MiB. The long continuation averages 0.365 N3M cores and 0.231 frontend cores. During wall seconds 130–400, N3M RSS changes from 224.0 to 227.4 MiB and frontend RSS from 308.7 to 307.6 MiB. Per-process RSS is not additive physical RAM, and a five-minute hold does not establish bounded memory during unlimited exploration.
+
+### Historical map recovery
+
+The old corrupted near-wall map still produces a 16.24 m wrong lock with the repaired program. Replacing **only the map** with the result regenerated from the original partial map and raw recording reduces the peak to 5.41 cm and eliminates the wrong lock. The independently installed Humble candidate reproduces 5.41 cm. This repair prevents the bad continuation update; it does not rewrite historical map artifacts in-place.
+
+Validated reconstructed maps are in workspace `build/fast_livo2/integration/repair_final_{avia_normal_range,avia_textured_final,mid360_normal_range}_noetic_resume/map/`. Each directory contains `n3map.pbstream` and its map artifacts. The machine record includes their SHA256 values. Retain the original failed maps as evidence and use the regenerated versions for these tests.
 
 ## Evidence and remaining scope
 
-Workspace evidence is under `build/fast_livo2/integration/`: `qualification.json`, `final_source_manifest.json`, `qualified_build_identity.json`, per-route scores and `persistence_*` directories. Frozen raw data are under `build/fast_livo2/sprobo_20261027/`; `monolith_reference/` retains the corrected pre-extraction implementation. [Qualification summary](qualification_20261028.json) records final binaries separately from the full-matrix binaries.
+Workspace evidence is under `build/fast_livo2/integration/`: `qualification.json` (historical frontend stage), `repair_qualification.json`, `repair_final_build_identity.json`, per-route scores and the original `persistence_*` failure directories. Frozen raw data are under `build/fast_livo2/sprobo_20261027/`; `monolith_reference/` retains the corrected pre-extraction implementation. [Qualification summary](qualification_20261028.json) records final binaries separately from the full-matrix binaries.
 
-The full ROS matrix preceded the no-observer queue guard and optional COLMAP path correction. These do not execute in that matrix's configuration; targeted native/export checks plus both final builds and preprocessing regressions verify the later changes. Standalone Release builds, installation and an external `find_package(fast_livo2_core)` consumer pass without ROS. The near-wall sanitizer result is a full native replay; the ASan-only Eigen allocation setting matches the system PCL ABI and is not a production flag.
+The earlier eight-run mapping matrix preceded the no-observer queue guard and optional COLMAP path correction. These do not execute in that matrix's configuration; targeted native/export checks plus both final builds and preprocessing regressions verify the later changes. The final 12-run continuation/reload matrix uses the unchanged final frontend binaries and the repaired backend. Standalone Release builds, installation and an external `find_package(fast_livo2_core)` consumer pass without ROS. The near-wall sanitizer result is a full native replay; the ASan-only Eigen allocation setting matches the system PCL ABI and is not a production flag.
 
-The simulator camera is an ideal 320×240 pinhole, not a calibrated physical D435i optical/noise model. No RK3588 deployment, general 10 cm guarantee, or reliable camera-disabled corridor localization is claimed. Both tested Avia continuation/reload conditions remain unqualified. This is a local development candidate; no remote publication or installed-library replacement is part of this stage.
+The simulator camera is an ideal 320×240 pinhole, not a calibrated physical D435i optical/noise model. No RK3588 deployment, general 10 cm guarantee, or reliable camera-disabled corridor localization is claimed. The tested regenerated-map paths pass; the historical corrupted map requires rebuilding. This is a local development candidate; no remote publication or installed-library replacement is part of this stage.
