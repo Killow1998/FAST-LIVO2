@@ -33,25 +33,6 @@ void calcBodyCov(Eigen::Vector3d &pb, const float range_inc, const float degree_
   cov = direction * range_var * direction.transpose() + A * direction_var * A.transpose();
 }
 
-void loadVoxelConfig(ros::NodeHandle &nh, VoxelMapConfig &voxel_config)
-{
-  nh.param<bool>("publish/pub_plane_en", voxel_config.is_pub_plane_map_, false);
-  
-  nh.param<int>("lio/max_layer", voxel_config.max_layer_, 1);
-  nh.param<double>("lio/voxel_size", voxel_config.max_voxel_size_, 0.5);
-  nh.param<double>("lio/min_eigen_value", voxel_config.planner_threshold_, 0.01);
-  nh.param<double>("lio/sigma_num", voxel_config.sigma_num_, 3);
-  nh.param<double>("lio/beam_err", voxel_config.beam_err_, 0.02);
-  nh.param<double>("lio/dept_err", voxel_config.dept_err_, 0.05);
-  nh.param<vector<int>>("lio/layer_init_num", voxel_config.layer_init_num_, vector<int>{5,5,5,5,5});
-  nh.param<int>("lio/max_points_num", voxel_config.max_points_num_, 50);
-  nh.param<int>("lio/max_iterations", voxel_config.max_iterations_, 5);
-
-  nh.param<bool>("local_map/map_sliding_en", voxel_config.map_sliding_en, false);
-  nh.param<int>("local_map/half_map_size", voxel_config.half_map_size, 100);
-  nh.param<double>("local_map/sliding_thresh", voxel_config.sliding_thresh, 8);
-}
-
 void VoxelOctoTree::init_plane(const std::vector<pointWithVar> &points, VoxelPlane *plane)
 {
   plane->plane_var_ = Eigen::Matrix<double, 6, 6>::Zero();
@@ -214,6 +195,8 @@ void VoxelOctoTree::cut_octo_tree()
       }
     }
   }
+  // Split nodes route later observations to their children.
+  std::vector<pointWithVar>().swap(temp_points_);
 }
 
 void VoxelOctoTree::UpdateOctoTree(const pointWithVar &pv)
@@ -401,8 +384,6 @@ void VoxelMapManager::StateEstimation(StatesGroup &state_propagat)
       total_residual += fabs(ptpl_list_[i].dis_to_plane_);
     }
     effct_feat_num_ = ptpl_list_.size();
-    cout << "[ LIO ] Raw feature num: " << feats_undistort_->size() << ", downsampled feature num:" << feats_down_size_ 
-         << " effective feature num: " << effct_feat_num_ << " average residual: " << total_residual / effct_feat_num_ << endl;
 
     /*** Computation of Measuremnt Jacobian matrix H and measurents covarience
      * ***/
@@ -490,7 +471,7 @@ void VoxelMapManager::StateEstimation(StatesGroup &state_propagat)
           (I_STATE.block<DIM_STATE, DIM_STATE>(0, 0) - G.block<DIM_STATE, DIM_STATE>(0, 0)) * state_.cov.block<DIM_STATE, DIM_STATE>(0, 0);
       // total_distance += (_state.pos_end - position_last).norm();
       position_last_ = state_.pos_end;
-      geoQuat_ = tf::createQuaternionMsgFromRollPitchYaw(euler_cur(0), euler_cur(1), euler_cur(2));
+
 
       // VD(DIM_STATE) K_sum  = K.rowwise().sum();
       // VD(DIM_STATE) P_diag = _state.cov.diagonal();
@@ -558,13 +539,7 @@ void VoxelMapManager::BuildVoxelMap()
   for (uint i = 0; i < plsize; i++)
   {
     const pointWithVar p_v = input_points[i];
-    float loc_xyz[3];
-    for (int j = 0; j < 3; j++)
-    {
-      loc_xyz[j] = p_v.point_w[j] / voxel_size;
-      if (loc_xyz[j] < 0) { loc_xyz[j] -= 1.0; }
-    }
-    VOXEL_LOCATION position((int64_t)loc_xyz[0], (int64_t)loc_xyz[1], (int64_t)loc_xyz[2]);
+    const auto position = pointToVoxel(p_v.point_w, voxel_size);
     auto iter = voxel_map_.find(position);
     if (iter != voxel_map_.end())
     {
@@ -592,14 +567,8 @@ void VoxelMapManager::BuildVoxelMap()
 
 V3F VoxelMapManager::RGBFromVoxel(const V3D &input_point)
 {
-  int64_t loc_xyz[3];
-  for (int j = 0; j < 3; j++)
-  {
-    loc_xyz[j] = floor(input_point[j] / config_setting_.max_voxel_size_);
-  }
-
-  VOXEL_LOCATION position((int64_t)loc_xyz[0], (int64_t)loc_xyz[1], (int64_t)loc_xyz[2]);
-  int64_t ind = loc_xyz[0] + loc_xyz[1] + loc_xyz[2];
+  const auto position = pointToVoxel(input_point, config_setting_.max_voxel_size_);
+  int64_t ind = position.x + position.y + position.z;
   uint k((ind + 100000) % 3);
   V3F RGB((k == 0) * 255.0, (k == 1) * 255.0, (k == 2) * 255.0);
   // cout<<"RGB: "<<RGB.transpose()<<endl;
@@ -617,13 +586,7 @@ void VoxelMapManager::UpdateVoxelMap(const std::vector<pointWithVar> &input_poin
   for (uint i = 0; i < plsize; i++)
   {
     const pointWithVar p_v = input_points[i];
-    float loc_xyz[3];
-    for (int j = 0; j < 3; j++)
-    {
-      loc_xyz[j] = p_v.point_w[j] / voxel_size;
-      if (loc_xyz[j] < 0) { loc_xyz[j] -= 1.0; }
-    }
-    VOXEL_LOCATION position((int64_t)loc_xyz[0], (int64_t)loc_xyz[1], (int64_t)loc_xyz[2]);
+    const auto position = pointToVoxel(p_v.point_w, voxel_size);
     auto iter = voxel_map_.find(position);
     if (iter != voxel_map_.end()) { voxel_map_[position]->UpdateOctoTree(p_v); }
     else
@@ -656,19 +619,13 @@ void VoxelMapManager::BuildResidualListOMP(std::vector<pointWithVar> &pv_list, s
     useful_ptpl[i] = false;
   }
   #ifdef MP_EN
-    omp_set_num_threads(MP_PROC_NUM);
+    omp_set_num_threads(num_threads);
     #pragma omp parallel for
   #endif
   for (int i = 0; i < index.size(); i++)
   {
     pointWithVar &pv = pv_list[i];
-    float loc_xyz[3];
-    for (int j = 0; j < 3; j++)
-    {
-      loc_xyz[j] = pv.point_w[j] / voxel_size;
-      if (loc_xyz[j] < 0) { loc_xyz[j] -= 1.0; }
-    }
-    VOXEL_LOCATION position((int64_t)loc_xyz[0], (int64_t)loc_xyz[1], (int64_t)loc_xyz[2]);
+    const auto position = pointToVoxel(pv.point_w, voxel_size);
     auto iter = voxel_map_.find(position);
     if (iter != voxel_map_.end())
     {
@@ -680,12 +637,12 @@ void VoxelMapManager::BuildResidualListOMP(std::vector<pointWithVar> &pv_list, s
       if (!is_sucess)
       {
         VOXEL_LOCATION near_position = position;
-        if (loc_xyz[0] > (current_octo->voxel_center_[0] + current_octo->quater_length_)) { near_position.x = near_position.x + 1; }
-        else if (loc_xyz[0] < (current_octo->voxel_center_[0] - current_octo->quater_length_)) { near_position.x = near_position.x - 1; }
-        if (loc_xyz[1] > (current_octo->voxel_center_[1] + current_octo->quater_length_)) { near_position.y = near_position.y + 1; }
-        else if (loc_xyz[1] < (current_octo->voxel_center_[1] - current_octo->quater_length_)) { near_position.y = near_position.y - 1; }
-        if (loc_xyz[2] > (current_octo->voxel_center_[2] + current_octo->quater_length_)) { near_position.z = near_position.z + 1; }
-        else if (loc_xyz[2] < (current_octo->voxel_center_[2] - current_octo->quater_length_)) { near_position.z = near_position.z - 1; }
+        if (pv.point_w[0] > (current_octo->voxel_center_[0] + current_octo->quater_length_)) { near_position.x = near_position.x + 1; }
+        else if (pv.point_w[0] < (current_octo->voxel_center_[0] - current_octo->quater_length_)) { near_position.x = near_position.x - 1; }
+        if (pv.point_w[1] > (current_octo->voxel_center_[1] + current_octo->quater_length_)) { near_position.y = near_position.y + 1; }
+        else if (pv.point_w[1] < (current_octo->voxel_center_[1] - current_octo->quater_length_)) { near_position.y = near_position.y - 1; }
+        if (pv.point_w[2] > (current_octo->voxel_center_[2] + current_octo->quater_length_)) { near_position.z = near_position.z + 1; }
+        else if (pv.point_w[2] < (current_octo->voxel_center_[2] - current_octo->quater_length_)) { near_position.z = near_position.z - 1; }
         auto iter_near = voxel_map_.find(near_position);
         if (iter_near != voxel_map_.end()) { build_single_residual(pv, iter_near->second, 0, is_sucess, prob, single_ptpl); }
       }
@@ -785,36 +742,23 @@ void VoxelMapManager::build_single_residual(pointWithVar &pv, const VoxelOctoTre
   }
 }
 
-void VoxelMapManager::pubVoxelMap()
+std::vector<fast_livo2::PlaneVisual> VoxelMapManager::planeVisuals()
 {
-  double max_trace = 0.25;
-  double pow_num = 0.2;
-  ros::Rate loop(500);
-  float use_alpha = 0.8;
-  visualization_msgs::MarkerArray voxel_plane;
-  voxel_plane.markers.reserve(1000000);
-  std::vector<VoxelPlane> pub_plane_list;
-  for (auto iter = voxel_map_.begin(); iter != voxel_map_.end(); iter++)
-  {
-    GetUpdatePlane(iter->second, config_setting_.max_layer_, pub_plane_list);
+  std::vector<VoxelPlane> planes;
+  for (const auto &entry : voxel_map_) GetUpdatePlane(entry.second, config_setting_.max_layer_, planes);
+  std::vector<fast_livo2::PlaneVisual> result;
+  result.reserve(planes.size());
+  for (const auto &plane : planes) {
+    double trace = std::min(0.25, plane.plane_var_.block<3, 3>(0, 0).diagonal().sum());
+    uint8_t red, green, blue;
+    mapJet(std::pow(trace / 0.25, 0.2), 0, 1, red, green, blue);
+    Eigen::Matrix3d rotation;
+    rotation.col(0) = plane.x_normal_; rotation.col(1) = plane.y_normal_; rotation.col(2) = plane.normal_;
+    result.push_back({plane.id_, plane.center_,
+        V3D(3 * std::sqrt(plane.max_eigen_value_), 3 * std::sqrt(plane.mid_eigen_value_), 2 * std::sqrt(plane.min_eigen_value_)),
+        V3D(red / 256., green / 256., blue / 256.), Eigen::Quaterniond(rotation), plane.is_plane_ ? 0.8 : 0.});
   }
-  for (size_t i = 0; i < pub_plane_list.size(); i++)
-  {
-    V3D plane_cov = pub_plane_list[i].plane_var_.block<3, 3>(0, 0).diagonal();
-    double trace = plane_cov.sum();
-    if (trace >= max_trace) { trace = max_trace; }
-    trace = trace * (1.0 / max_trace);
-    trace = pow(trace, pow_num);
-    uint8_t r, g, b;
-    mapJet(trace, 0, 1, r, g, b);
-    Eigen::Vector3d plane_rgb(r / 256.0, g / 256.0, b / 256.0);
-    double alpha;
-    if (pub_plane_list[i].is_plane_) { alpha = use_alpha; }
-    else { alpha = 0; }
-    pubSinglePlane(voxel_plane, "plane", pub_plane_list[i], alpha, plane_rgb);
-  }
-  voxel_map_pub_.publish(voxel_plane);
-  loop.sleep();
+  return result;
 }
 
 void VoxelMapManager::GetUpdatePlane(const VoxelOctoTree *current_octo, const int pub_max_voxel_layer, std::vector<VoxelPlane> &plane_list)
@@ -832,46 +776,6 @@ void VoxelMapManager::GetUpdatePlane(const VoxelOctoTree *current_octo, const in
     }
   }
   return;
-}
-
-void VoxelMapManager::pubSinglePlane(visualization_msgs::MarkerArray &plane_pub, const std::string plane_ns, const VoxelPlane &single_plane,
-                                     const float alpha, const Eigen::Vector3d rgb)
-{
-  visualization_msgs::Marker plane;
-  plane.header.frame_id = "camera_init";
-  plane.header.stamp = ros::Time();
-  plane.ns = plane_ns;
-  plane.id = single_plane.id_;
-  plane.type = visualization_msgs::Marker::CYLINDER;
-  plane.action = visualization_msgs::Marker::ADD;
-  plane.pose.position.x = single_plane.center_[0];
-  plane.pose.position.y = single_plane.center_[1];
-  plane.pose.position.z = single_plane.center_[2];
-  geometry_msgs::Quaternion q;
-  CalcVectQuation(single_plane.x_normal_, single_plane.y_normal_, single_plane.normal_, q);
-  plane.pose.orientation = q;
-  plane.scale.x = 3 * sqrt(single_plane.max_eigen_value_);
-  plane.scale.y = 3 * sqrt(single_plane.mid_eigen_value_);
-  plane.scale.z = 2 * sqrt(single_plane.min_eigen_value_);
-  plane.color.a = alpha;
-  plane.color.r = rgb(0);
-  plane.color.g = rgb(1);
-  plane.color.b = rgb(2);
-  plane.lifetime = ros::Duration();
-  plane_pub.markers.push_back(plane);
-}
-
-void VoxelMapManager::CalcVectQuation(const Eigen::Vector3d &x_vec, const Eigen::Vector3d &y_vec, const Eigen::Vector3d &z_vec,
-                                      geometry_msgs::Quaternion &q)
-{
-  Eigen::Matrix3d rot;
-  rot << x_vec(0), x_vec(1), x_vec(2), y_vec(0), y_vec(1), y_vec(2), z_vec(0), z_vec(1), z_vec(2);
-  Eigen::Matrix3d rotation = rot.transpose();
-  Eigen::Quaterniond eq(rotation);
-  q.w = eq.w();
-  q.x = eq.x();
-  q.y = eq.y();
-  q.z = eq.z();
 }
 
 void VoxelMapManager::mapJet(double v, double vmin, double vmax, uint8_t &r, uint8_t &g, uint8_t &b)
@@ -925,26 +829,17 @@ void VoxelMapManager::mapSliding()
 {
   if((position_last_ - last_slide_position).norm() < config_setting_.sliding_thresh)
   {
-    std::cout<<RED<<"[DEBUG]: Last sliding length "<<(position_last_ - last_slide_position).norm()<<RESET<<"\n";
     return;
   }
 
   //get global id now
   last_slide_position = position_last_;
   double t_sliding_start = omp_get_wtime();
-  float loc_xyz[3];
-  for (int j = 0; j < 3; j++)
-  {
-    loc_xyz[j] = position_last_[j] / config_setting_.max_voxel_size_;
-    if (loc_xyz[j] < 0) { loc_xyz[j] -= 1.0; }
-  }
-  // VOXEL_LOCATION position((int64_t)loc_xyz[0], (int64_t)loc_xyz[1], (int64_t)loc_xyz[2]);//discrete global
-  clearMemOutOfMap((int64_t)loc_xyz[0] + config_setting_.half_map_size, (int64_t)loc_xyz[0] - config_setting_.half_map_size,
-                    (int64_t)loc_xyz[1] + config_setting_.half_map_size, (int64_t)loc_xyz[1] - config_setting_.half_map_size,
-                    (int64_t)loc_xyz[2] + config_setting_.half_map_size, (int64_t)loc_xyz[2] - config_setting_.half_map_size);
+  const auto position = pointToVoxel(position_last_, config_setting_.max_voxel_size_);
+  clearMemOutOfMap(position.x + config_setting_.half_map_size, position.x - config_setting_.half_map_size,
+                    position.y + config_setting_.half_map_size, position.y - config_setting_.half_map_size,
+                    position.z + config_setting_.half_map_size, position.z - config_setting_.half_map_size);
   double t_sliding_end = omp_get_wtime();
-  std::cout<<RED<<"[DEBUG]: Map sliding using "<<t_sliding_end - t_sliding_start<<" secs"<<RESET<<"\n";
-  return;
 }
 
 void VoxelMapManager::clearMemOutOfMap(const int& x_max,const int& x_min,const int& y_max,const int& y_min,const int& z_max,const int& z_min )
@@ -966,6 +861,5 @@ void VoxelMapManager::clearMemOutOfMap(const int& x_max,const int& x_min,const i
       ++it;
     }
   }
-  std::cout<<RED<<"[DEBUG]: Delete "<<delete_voxel_cout<<" root voxels"<<RESET<<"\n";
   // std::cout<<RED<<"[DEBUG]: Delete "<<delete_voxel_cout<<" voxels using "<<delete_time<<" s"<<RESET<<"\n";
 }

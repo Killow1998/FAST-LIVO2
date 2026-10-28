@@ -1,0 +1,650 @@
+{
+  "schema": 1,
+  "status": "shared core and both ROS adapters verified; tested Avia continuation/reload accuracy NOT qualified",
+  "upstream_base": "0d2c0346107b75b59934975adec9a6eeeb913c64",
+  "cpus": [
+    0,
+    2,
+    4,
+    6
+  ],
+  "matrix_builds": {
+    "noetic_core": {
+      "file": "build/fast_livo2/integration/profiles/noetic-release/build/fast_livo/libfast_livo2_core.so",
+      "sha256": "f2900a50d7ccf0620563ae518be39a8589e8b0edb000da4304133f5a711c9df7"
+    },
+    "noetic_node": {
+      "file": "build/fast_livo2/integration/profiles/noetic-release/devel/.private/fast_livo/lib/fast_livo/fastlivo_mapping",
+      "sha256": "f32181c73423622bb01e1600994dc5e3373228053bc3d754c8efbfa789f35663"
+    },
+    "humble_core": {
+      "file": "build/fast_livo2/integration/profiles/humble-release/build/fast_livo/libfast_livo2_core.so",
+      "sha256": "6687278732752737c17e08ed4e28fb49236565816be68fccb90293c1a332c883"
+    },
+    "humble_node": {
+      "file": "build/fast_livo2/integration/profiles/humble-release/build/fast_livo/fastlivo_mapping",
+      "sha256": "7cae156dd74cb011da0063c87cb8a4c3405a945436e4f6f43e9eb7bd95d73596"
+    }
+  },
+  "mapping": {
+    "avia_normal_range__qualified_noetic": {
+      "evidence": "avia_normal_range__qualified_noetic",
+      "transport_complete": true,
+      "scores": {
+        "frontend": {
+          "frames": 1069,
+          "position_rmse_m": 0.04148910268345614,
+          "position_p95_m": 0.06487888484986422,
+          "position_max_m": 0.08011176791515218,
+          "angle_rmse_deg": 0.24598266874028352,
+          "angle_max_deg": 0.7775856456616388,
+          "fraction_over_10cm": 0.0,
+          "longest_over_10cm_s": 0,
+          "over_10cm_intervals": [],
+          "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+        },
+        "n3m": {
+          "frames": 1029,
+          "position_rmse_m": 0.04147524128729958,
+          "position_p95_m": 0.06218878213666766,
+          "position_max_m": 0.0769906627739658,
+          "angle_rmse_deg": 0.17061869290647008,
+          "angle_max_deg": 0.687723165344947,
+          "fraction_over_10cm": 0.0,
+          "longest_over_10cm_s": 0,
+          "over_10cm_intervals": [],
+          "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+        }
+      },
+      "accuracy_pass": true
+    },
+    "avia_normal_range__qualified_humble": {
+      "evidence": "avia_normal_range__qualified_humble",
+      "transport_complete": true,
+      "scores": {
+        "frontend": {
+          "frames": 1070,
+          "position_rmse_m": 0.042961457207104,
+          "position_p95_m": 0.06843559537004082,
+          "position_max_m": 0.08085912378532639,
+          "angle_rmse_deg": 0.15756419321423523,
+          "angle_max_deg": 0.480528692271827,
+          "fraction_over_10cm": 0.0,
+          "longest_over_10cm_s": 0,
+          "over_10cm_intervals": [],
+          "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+        },
+        "n3m": {
+          "frames": 1029,
+          "position_rmse_m": 0.04370715805549244,
+          "position_p95_m": 0.06670044752353303,
+          "position_max_m": 0.0798307529905414,
+          "angle_rmse_deg": 0.18231873837283155,
+          "angle_max_deg": 0.5866549507360711,
+          "fraction_over_10cm": 0.0,
+          "longest_over_10cm_s": 0,
+          "over_10cm_intervals": [],
+          "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+        }
+      },
+      "accuracy_pass": true
+    },
+    "avia_textured_final__qualified_noetic": {
+      "evidence": "avia_textured_final__qualified_noetic",
+      "transport_complete": true,
+      "scores": {
+        "frontend": {
+          "frames": 1093,
+          "position_rmse_m": 0.03446043863689547,
+          "position_p95_m": 0.054112742378754804,
+          "position_max_m": 0.05869435949517398,
+          "angle_rmse_deg": 0.25412031889299863,
+          "angle_max_deg": 1.7075429496173342,
+          "fraction_over_10cm": 0.0,
+          "longest_over_10cm_s": 0,
+          "over_10cm_intervals": [],
+          "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+        },
+        "n3m": {
+          "frames": 1053,
+          "position_rmse_m": 0.03506175764902654,
+          "position_p95_m": 0.052841329005173125,
+          "position_max_m": 0.05710446201614788,
+          "angle_rmse_deg": 0.2034967410864544,
+          "angle_max_deg": 1.9048854589816018,
+          "fraction_over_10cm": 0.0,
+          "longest_over_10cm_s": 0,
+          "over_10cm_intervals": [],
+          "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+        }
+      },
+      "accuracy_pass": true
+    },
+    "avia_textured_final__qualified_humble": {
+      "evidence": "avia_textured_final__qualified_humble",
+      "transport_complete": true,
+      "scores": {
+        "frontend": {
+          "frames": 1094,
+          "position_rmse_m": 0.031154135276731002,
+          "position_p95_m": 0.0498086034070759,
+          "position_max_m": 0.05654389637746039,
+          "angle_rmse_deg": 0.18123853855341912,
+          "angle_max_deg": 1.646931253622052,
+          "fraction_over_10cm": 0.0,
+          "longest_over_10cm_s": 0,
+          "over_10cm_intervals": [],
+          "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+        },
+        "n3m": {
+          "frames": 1053,
+          "position_rmse_m": 0.03220621160738651,
+          "position_p95_m": 0.048686367294140144,
+          "position_max_m": 0.0575071739357305,
+          "angle_rmse_deg": 0.20722227907694565,
+          "angle_max_deg": 1.7411650875701428,
+          "fraction_over_10cm": 0.0,
+          "longest_over_10cm_s": 0,
+          "over_10cm_intervals": [],
+          "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+        }
+      },
+      "accuracy_pass": true
+    },
+    "mid360_normal_range__qualified_noetic": {
+      "evidence": "mid360_normal_range__qualified_noetic",
+      "transport_complete": true,
+      "scores": {
+        "frontend": {
+          "frames": 1069,
+          "position_rmse_m": 0.004771114440715866,
+          "position_p95_m": 0.007529115794175856,
+          "position_max_m": 0.018001343392743927,
+          "angle_rmse_deg": 0.06197030569777767,
+          "angle_max_deg": 0.3276385790306737,
+          "fraction_over_10cm": 0.0,
+          "longest_over_10cm_s": 0,
+          "over_10cm_intervals": [],
+          "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+        },
+        "n3m": {
+          "frames": 1038,
+          "position_rmse_m": 0.0035711157174568406,
+          "position_p95_m": 0.006071613810781851,
+          "position_max_m": 0.013817665082529438,
+          "angle_rmse_deg": 0.06438958826121827,
+          "angle_max_deg": 0.35737590903851024,
+          "fraction_over_10cm": 0.0,
+          "longest_over_10cm_s": 0,
+          "over_10cm_intervals": [],
+          "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+        }
+      },
+      "accuracy_pass": true
+    },
+    "mid360_normal_range__qualified_humble": {
+      "evidence": "mid360_normal_range__qualified_humble",
+      "transport_complete": true,
+      "scores": {
+        "frontend": {
+          "frames": 1070,
+          "position_rmse_m": 0.00556143342093409,
+          "position_p95_m": 0.00866219315719423,
+          "position_max_m": 0.021059927686735015,
+          "angle_rmse_deg": 0.0633254382696003,
+          "angle_max_deg": 0.23832990771350346,
+          "fraction_over_10cm": 0.0,
+          "longest_over_10cm_s": 0,
+          "over_10cm_intervals": [],
+          "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+        },
+        "n3m": {
+          "frames": 1026,
+          "position_rmse_m": 0.003187990186811338,
+          "position_p95_m": 0.005840496153531598,
+          "position_max_m": 0.013305200393007139,
+          "angle_rmse_deg": 0.05875099576785017,
+          "angle_max_deg": 0.26516124277153064,
+          "fraction_over_10cm": 0.0,
+          "longest_over_10cm_s": 0,
+          "over_10cm_intervals": [],
+          "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+        }
+      },
+      "accuracy_pass": true
+    },
+    "avia_long_hold__qualified_noetic": {
+      "evidence": "avia_long_hold__qualified_noetic",
+      "transport_complete": true,
+      "scores": {
+        "frontend": {
+          "frames": 4069,
+          "position_rmse_m": 0.02234474926698383,
+          "position_p95_m": 0.06373417696788597,
+          "position_max_m": 0.08011176791515218,
+          "angle_rmse_deg": 0.1825947354795085,
+          "angle_max_deg": 0.7775856456616388,
+          "fraction_over_10cm": 0.0,
+          "longest_over_10cm_s": 0,
+          "over_10cm_intervals": [],
+          "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+        },
+        "n3m": {
+          "frames": 4029,
+          "position_rmse_m": 0.04777487484650401,
+          "position_p95_m": 0.059866227534105906,
+          "position_max_m": 0.07699066277396417,
+          "angle_rmse_deg": 0.11285155567241424,
+          "angle_max_deg": 0.6877231653449364,
+          "fraction_over_10cm": 0.0,
+          "longest_over_10cm_s": 0,
+          "over_10cm_intervals": [],
+          "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+        }
+      },
+      "accuracy_pass": true
+    },
+    "avia_long_hold__qualified_humble": {
+      "evidence": "avia_long_hold__qualified_humble",
+      "transport_complete": true,
+      "scores": {
+        "frontend": {
+          "frames": 4070,
+          "position_rmse_m": 0.022361233484284954,
+          "position_p95_m": 0.0671976837513194,
+          "position_max_m": 0.08085912378532639,
+          "angle_rmse_deg": 0.08822290760285323,
+          "angle_max_deg": 0.480528692271827,
+          "fraction_over_10cm": 0.0,
+          "longest_over_10cm_s": 0,
+          "over_10cm_intervals": [],
+          "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+        },
+        "n3m": {
+          "frames": 4029,
+          "position_rmse_m": 0.04873500238565012,
+          "position_p95_m": 0.0630527698556728,
+          "position_max_m": 0.07983075299054364,
+          "angle_rmse_deg": 0.107836219236044,
+          "angle_max_deg": 0.5866549507360711,
+          "fraction_over_10cm": 0.0,
+          "longest_over_10cm_s": 0,
+          "over_10cm_intervals": [],
+          "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+        }
+      },
+      "accuracy_pass": true
+    }
+  },
+  "persistence": {
+    "persistence_mid360_normal_range_partial": {
+      "frames": 209,
+      "position_rmse_m": 0.0028687496363963387,
+      "position_max_m": 0.005740295246544133,
+      "position_p95_m": 0.005052829174962277,
+      "fraction_over_10cm": 0.0,
+      "peak_stamp": 28.3,
+      "peak_xyz_m": [
+        -0.00017206255704005358,
+        -0.0012051846744086242,
+        -0.005609716026193534
+      ],
+      "alignment": "one fixed SE3 from the initial partial-map frontend pose; reused for continuation and cross-ROS reload"
+    },
+    "persistence_mid360_normal_range_resume": {
+      "frames": 1059,
+      "position_rmse_m": 0.005604217468682883,
+      "position_max_m": 0.01663131193365892,
+      "position_p95_m": 0.008679582332951125,
+      "fraction_over_10cm": 0.0,
+      "peak_stamp": 60.3,
+      "peak_xyz_m": [
+        3.267869260525913e-06,
+        -0.000481907171851953,
+        -0.01662432830021754
+      ],
+      "alignment": "one fixed SE3 from the initial partial-map frontend pose; reused for continuation and cross-ROS reload"
+    },
+    "persistence_mid360_normal_range_humble_reload": {
+      "frames": 1062,
+      "position_rmse_m": 0.005810847062438166,
+      "position_max_m": 0.02004601774974634,
+      "position_p95_m": 0.009086369413817658,
+      "fraction_over_10cm": 0.0,
+      "peak_stamp": 60.3,
+      "peak_xyz_m": [
+        0.0001578537034507832,
+        0.00033087812022433716,
+        -0.02004266522948006
+      ],
+      "alignment": "one fixed SE3 from the initial partial-map frontend pose; reused for continuation and cross-ROS reload"
+    },
+    "persistence_avia_textured_final_partial": {
+      "frames": 200,
+      "position_rmse_m": 0.003566556029956858,
+      "position_max_m": 0.007012429669788979,
+      "position_p95_m": 0.005708011392852003,
+      "fraction_over_10cm": 0.0,
+      "peak_stamp": 11.7,
+      "peak_xyz_m": [
+        0.0006917893149918086,
+        -0.0031277880609416053,
+        0.006237991604934323
+      ],
+      "alignment": "one fixed SE3 from the initial partial-map frontend pose; reused for continuation and cross-ROS reload"
+    },
+    "persistence_avia_textured_final_resume": {
+      "frames": 1087,
+      "position_rmse_m": 0.1140932707326575,
+      "position_max_m": 0.23438452845885985,
+      "position_p95_m": 0.17696137579773116,
+      "fraction_over_10cm": 0.4452621895124195,
+      "peak_stamp": 62.4,
+      "peak_xyz_m": [
+        0.23397159812727963,
+        0.013901848345370643,
+        0.0003702205169260342
+      ],
+      "alignment": "one fixed SE3 from the initial partial-map frontend pose; reused for continuation and cross-ROS reload"
+    },
+    "persistence_avia_textured_final_humble_reload": {
+      "frames": 1084,
+      "position_rmse_m": 2.6404414277793746,
+      "position_max_m": 16.236883050788755,
+      "position_p95_m": 0.5108055130903381,
+      "fraction_over_10cm": 0.540590405904059,
+      "peak_stamp": 101.0,
+      "peak_xyz_m": [
+        16.236707726457634,
+        -0.07544854013694215,
+        0.0009635212828332795
+      ],
+      "alignment": "one fixed SE3 from the initial partial-map frontend pose; reused for continuation and cross-ROS reload"
+    },
+    "persistence_avia_textured_final_noetic_reload": {
+      "frames": 1069,
+      "position_rmse_m": 2.654410763290841,
+      "position_max_m": 16.23714146109227,
+      "position_p95_m": 0.5205873000732014,
+      "fraction_over_10cm": 0.5472404115996258,
+      "peak_stamp": 101.0,
+      "peak_xyz_m": [
+        16.23696160192262,
+        -0.07642486218455614,
+        7.518051898236511e-05
+      ],
+      "alignment": "one fixed SE3 from the initial partial-map frontend pose; reused for continuation and cross-ROS reload"
+    },
+    "persistence_avia_normal_range_partial": {
+      "frames": 200,
+      "position_rmse_m": 0.003566871166598387,
+      "position_max_m": 0.007009131889432627,
+      "position_p95_m": 0.0057059992847210035,
+      "fraction_over_10cm": 0.0,
+      "peak_stamp": 11.7,
+      "peak_xyz_m": [
+        0.0006923382890953178,
+        -0.0031218603401365064,
+        0.006237193724231815
+      ],
+      "alignment": "one fixed SE3 from the initial partial-map frontend pose; reused for continuation and cross-ROS reload"
+    },
+    "persistence_avia_normal_range_resume": {
+      "frames": 1063,
+      "position_rmse_m": 0.09588585968983139,
+      "position_max_m": 0.24895876065104372,
+      "position_p95_m": 0.1947040410621035,
+      "fraction_over_10cm": 0.4656632173095014,
+      "peak_stamp": 45.7,
+      "peak_xyz_m": [
+        0.24863108318080762,
+        0.012738585403271385,
+        0.0008817160345407915
+      ],
+      "alignment": "one fixed SE3 from the initial partial-map frontend pose; reused for continuation and cross-ROS reload"
+    },
+    "persistence_avia_normal_range_humble_reload": {
+      "frames": 1064,
+      "position_rmse_m": 0.1583992768792419,
+      "position_max_m": 0.5585811461490293,
+      "position_p95_m": 0.5305021420517588,
+      "fraction_over_10cm": 0.5093984962406015,
+      "peak_stamp": 50.7,
+      "peak_xyz_m": [
+        0.5583643097161382,
+        0.015302713399617085,
+        0.0028322130910304333
+      ],
+      "alignment": "one fixed SE3 from the initial partial-map frontend pose; reused for continuation and cross-ROS reload"
+    }
+  },
+  "resources": {
+    "avia_long_hold__reference": {
+      "peak_rss_mib": 672.05859375,
+      "cpu_seconds": 107.23,
+      "input_duration_s": 407.298,
+      "cpu_seconds_per_input_second": 0.26327160948494716,
+      "mean_cores_wall": 0.2584168985966227,
+      "stationary_window_wall_s": [
+        130,
+        400
+      ],
+      "stationary_rss_mib_first_last": [
+        329.484375,
+        653.84765625
+      ],
+      "stationary_slope_mib_per_minute": 71.995772303931
+    },
+    "avia_long_hold__candidate": {
+      "peak_rss_mib": 278.78515625,
+      "cpu_seconds": 105.36,
+      "input_duration_s": 407.298,
+      "cpu_seconds_per_input_second": 0.25868037653020637,
+      "mean_cores_wall": 0.25391558678205756,
+      "stationary_window_wall_s": [
+        130,
+        400
+      ],
+      "stationary_rss_mib_first_last": [
+        276.47265625,
+        278.65234375
+      ],
+      "stationary_slope_mib_per_minute": 0.5167657335577782
+    },
+    "avia_long_hold__qualified_noetic": {
+      "peak_rss_mib": 232.26171875,
+      "cpu_seconds": 95.97,
+      "input_duration_s": 407.298,
+      "cpu_seconds_per_input_second": 0.23562600356495736,
+      "mean_cores_wall": 0.23126740453426178,
+      "stationary_window_wall_s": [
+        130,
+        400
+      ],
+      "stationary_rss_mib_first_last": [
+        231.703125,
+        231.953125
+      ],
+      "stationary_slope_mib_per_minute": -0.046275146157244394
+    },
+    "avia_long_hold__qualified_humble": {
+      "peak_rss_mib": 310.7578125,
+      "cpu_seconds": 94.78,
+      "input_duration_s": 407.298,
+      "cpu_seconds_per_input_second": 0.23270430986648596,
+      "mean_cores_wall": 0.2294976469300422,
+      "stationary_window_wall_s": [
+        130,
+        400
+      ],
+      "stationary_rss_mib_first_last": [
+        305.48828125,
+        307.546875
+      ],
+      "stationary_slope_mib_per_minute": 0.028130289663887538
+    },
+    "street__qualified_noetic": {
+      "peak_rss_mib": 690.65234375,
+      "cpu_seconds": 59.300000000000004,
+      "input_duration_s": 135.47025227546692,
+      "cpu_seconds_per_input_second": 0.4377344767869675,
+      "mean_cores_wall": 0.4141492199921873
+    }
+  },
+  "checks": {
+    "feature_preprocess": "six boundary cases, Noetic/Humble/standalone passed",
+    "sanitizers": "full near-wall native replay ASan + UBSan + LeakSanitizer passed (native_asan04.log)",
+    "standalone_install_consumer": "passed",
+    "optional_exports": {
+      "passed": true,
+      "required_nonempty": {
+        "Log/Colmap/sparse/0/cameras.txt": 156,
+        "Log/Colmap/sparse/0/images.txt": 5302,
+        "Log/Colmap/sparse/0/points3D.txt": 426701,
+        "Log/pcd/all_raw_points.pcd": 19449386,
+        "Log/pcd/all_downsampled_points.pcd": 165286,
+        "Log/pcd/lidar_poses.txt": 4239,
+        "Log/image/image_poses.txt": 834,
+        "Log/result/CBD_Building_01.txt": 4239
+      },
+      "png_count": 67,
+      "frame_summary": {
+        "paired_frames": 56,
+        "qualified": false,
+        "clean_shutdown": true
+      },
+      "scope": "export smoke; partial fixture coverage includes initialization and is not an accuracy gate",
+      "csv_header_crlf_supported": true
+    },
+    "no_imu_observer": {
+      "frontend": {
+        "frames": 1093,
+        "position_rmse_m": 0.03186714086461927,
+        "position_p95_m": 0.04940609226625236,
+        "position_max_m": 0.05415176202567679,
+        "angle_rmse_deg": 0.2645400011461951,
+        "angle_max_deg": 1.70741574584586,
+        "fraction_over_10cm": 0.0,
+        "longest_over_10cm_s": 0,
+        "over_10cm_intervals": [],
+        "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+      }
+    },
+    "launch_entries": {
+      "noetic": "launch_smoke_noetic.log: started and exited by intentional SIGINT",
+      "humble": "launch_smoke_humble.log: started and clean exit by intentional SIGINT"
+    },
+    "standalone_no_ros_linkage": true
+  },
+  "limitations": [
+    "No independent ground truth for official Retail Street; mapping/save success is not 10 cm validation.",
+    "Simulator camera is an ideal 320x240 pinhole, not a calibrated physical D435i model.",
+    "No RK3588 deployment qualification; no claim of bounded RAM during unlimited exploration.",
+    "Avia narrow-view map continuation and reload fail accuracy; same 16.24 m wrong lock reproduced in both ROS versions. N3M production algorithm was not changed.",
+    "Full ROS matrix precedes no-observer queue fix and optional COLMAP path fix. These inactive matrix paths received targeted tests; final builds and source digest are recorded separately.",
+    "Normal-wall-distance Avia also fails continuation/reload (24.90 cm / 55.86 cm maxima); the near-wall case is not the only failed Avia condition."
+  ],
+  "final_builds": {
+    "noetic_core": {
+      "file": "build/fast_livo2/integration/profiles/noetic-release/build/fast_livo/libfast_livo2_core.so",
+      "sha256": "f480125eb53329786ca0041ec78945c5f89c2ce2d03c0de69ec392593501e90b"
+    },
+    "noetic_node": {
+      "file": "build/fast_livo2/integration/profiles/noetic-release/devel/.private/fast_livo/lib/fast_livo/fastlivo_mapping",
+      "sha256": "f32181c73423622bb01e1600994dc5e3373228053bc3d754c8efbfa789f35663"
+    },
+    "humble_core": {
+      "file": "build/fast_livo2/integration/profiles/humble-release/build/fast_livo/libfast_livo2_core.so",
+      "sha256": "3bfc54922264cc13fa599035b09e40c812d798cfe53b5616fbed35efbfab1cde"
+    },
+    "humble_node": {
+      "file": "build/fast_livo2/integration/profiles/humble-release/build/fast_livo/fastlivo_mapping",
+      "sha256": "7cae156dd74cb011da0063c87cb8a4c3405a945436e4f6f43e9eb7bd95d73596"
+    },
+    "standalone_core": {
+      "file": "build/fast_livo2/integration/profiles/core-release-make/libfast_livo2_core.so",
+      "sha256": "bae03a290b6f89e732e83a8df3f83f0f04bc7eb72c8552faf5a1b2b3cac35502"
+    },
+    "n3m_noetic": {
+      "file": "build/source_cleanup_20261027/noetic/install/lib/n3mapping/n3mapping_node",
+      "sha256": "7e5996e72b0ef538b832fc068740593a9dd3659044f604ad84c0365fba02bb8f"
+    },
+    "n3m_humble": {
+      "file": "build/source_cleanup_20261027/n3mapping/humble/install/n3mapping/lib/n3mapping/n3mapping_node",
+      "sha256": "94435f701eb20b3b74dbef2422e3fdb03836236962b20357f728f20696de85b3"
+    }
+  },
+  "source_manifest_sha256": "5565fbc490a227d2df2a5cc3083e76d9ea96ba5d6fc2e8d5177b56e45cdddf8d",
+  "final_build_checks": [
+    "noetic_final_build_test.log",
+    "humble_final_build_test.log",
+    "core_release_ctest.log",
+    "consumer.log",
+    "export_probe/result.json",
+    "launch_smoke_noetic.log",
+    "launch_smoke_humble.log",
+    "core_ldd.txt"
+  ],
+  "camera_disabled_control": {
+    "avia_normal_range__monolith_lio": {
+      "frames": 1069,
+      "position_rmse_m": 2.896706253766516,
+      "position_p95_m": 4.036776670124918,
+      "position_max_m": 4.112647837304067,
+      "angle_rmse_deg": 0.5809242158355485,
+      "angle_max_deg": 3.201797301595394,
+      "fraction_over_10cm": 0.6108512628624883,
+      "longest_over_10cm_s": 65.2,
+      "over_10cm_intervals": [
+        [
+          45.999995834,
+          111.199995834,
+          65.2
+        ]
+      ],
+      "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+    },
+    "avia_normal_range__core_lio": {
+      "frames": 1069,
+      "position_rmse_m": 2.8987465275393167,
+      "position_p95_m": 4.041065063326646,
+      "position_max_m": 4.116402799584954,
+      "angle_rmse_deg": 0.5803872808375639,
+      "angle_max_deg": 3.200516133909014,
+      "fraction_over_10cm": 0.6108512628624883,
+      "longest_over_10cm_s": 65.2,
+      "over_10cm_intervals": [
+        [
+          45.999995834,
+          111.199995834,
+          65.2
+        ]
+      ],
+      "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+    },
+    "avia_normal_range__native_lio": {
+      "frames": 1069,
+      "position_rmse_m": 2.9142078113309546,
+      "position_p95_m": 4.189874855243931,
+      "position_max_m": 4.282321096215932,
+      "angle_rmse_deg": 0.6151608108981227,
+      "angle_max_deg": 4.25017406969777,
+      "fraction_over_10cm": 0.6108512628624883,
+      "longest_over_10cm_s": 65.2,
+      "over_10cm_intervals": [
+        [
+          45.999995834,
+          111.199995834,
+          65.2
+        ]
+      ],
+      "alignment": "first output pose only, fixed SE3; no trajectory fitting, no scale fitting"
+    }
+  },
+  "cleanup": {
+    "unreferenced_private_dependency_files_removed": 20,
+    "unreferenced_lines_removed": 3208,
+    "obsolete_task_scratch_files_removed": 10,
+    "record": "cleanup.json"
+  }
+}

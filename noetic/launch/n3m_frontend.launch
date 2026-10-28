@@ -1,0 +1,13 @@
+<launch>
+  <arg name="config_file" />
+  <arg name="camera_file" />
+  <rosparam command="load" file="$(arg config_file)" />
+  <param name="pcd_save/pcd_save_en" value="false" />
+  <param name="pcd_save/colmap_output_en" value="false" />
+  <param name="image_save/img_save_en" value="false" />
+  <param name="evo/pose_output_en" value="false" />
+  <node pkg="fast_livo" type="fastlivo_mapping" name="laserMapping" output="screen">
+    <env name="OMP_WAIT_POLICY" value="PASSIVE" />
+    <rosparam file="$(arg camera_file)" />
+  </node>
+</launch>

@@ -16,40 +16,23 @@ which is included as part of this source code package.
 #include "common_lib.h"
 #include <Eigen/Dense>
 #include <fstream>
-#include <math.h>
+#include <cmath>
 #include <mutex>
 #include <omp.h>
 #include <pcl/common/io.h>
-#include <ros/ros.h>
+
 #include <thread>
 #include <unistd.h>
 #include <unordered_map>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
+
+#include <fast_livo2/config.h>
 
 #define VOXELMAP_HASH_P 116101
 #define VOXELMAP_MAX_N 10000000000
 
 static int voxel_plane_id = 0;
 
-typedef struct VoxelMapConfig
-{
-  double max_voxel_size_;
-  int max_layer_;
-  int max_iterations_;
-  std::vector<int> layer_init_num_;
-  int max_points_num_;
-  double planner_threshold_;
-  double beam_err_;
-  double dept_err_;
-  double sigma_num_;
-  bool is_pub_plane_map_;
-
-  // config of local map sliding
-  double sliding_thresh;
-  bool map_sliding_en;
-  int half_map_size;
-} VoxelMapConfig;
+using VoxelMapConfig = fast_livo2::GeometryConfig;
 
 typedef struct PointToPlane
 {
@@ -62,7 +45,6 @@ typedef struct PointToPlane
   int layer_;
   double d_;
   double eigen_value_;
-  bool is_valid_;
   float dis_to_plane_;
 } PointToPlane;
 
@@ -102,6 +84,13 @@ public:
 
   bool operator==(const VOXEL_LOCATION &other) const { return (x == other.x && y == other.y && z == other.z); }
 };
+
+inline VOXEL_LOCATION pointToVoxel(const V3D &point, double voxel_size)
+{
+  return {static_cast<int64_t>(std::floor(point.x() / voxel_size)),
+          static_cast<int64_t>(std::floor(point.y() / voxel_size)),
+          static_cast<int64_t>(std::floor(point.z() / voxel_size))};
+}
 
 // Hash value
 namespace std
@@ -182,15 +171,16 @@ public:
   VoxelOctoTree *Insert(const pointWithVar &pv);
 };
 
-void loadVoxelConfig(ros::NodeHandle &nh, VoxelMapConfig &voxel_config);
+
 
 class VoxelMapManager
 {
 public:
   VoxelMapManager() = default;
+  ~VoxelMapManager() { for (const auto &entry : voxel_map_) delete entry.second; }
   VoxelMapConfig config_setting_;
   int current_frame_id_ = 0;
-  ros::Publisher voxel_map_pub_;
+  int num_threads = 4;
   std::unordered_map<VOXEL_LOCATION, VoxelOctoTree *> voxel_map_;
 
   PointCloudXYZI::Ptr feats_undistort_;
@@ -208,7 +198,7 @@ public:
 
   V3D last_slide_position = {0,0,0};
 
-  geometry_msgs::Quaternion geoQuat_;
+
 
   int feats_down_size_;
   int effct_feat_num_;
@@ -217,8 +207,8 @@ public:
   std::vector<pointWithVar> pv_list_;
   std::vector<PointToPlane> ptpl_list_;
 
-  VoxelMapManager(VoxelMapConfig &config_setting, std::unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &voxel_map)
-      : config_setting_(config_setting), voxel_map_(voxel_map)
+  explicit VoxelMapManager(const VoxelMapConfig &config_setting)
+      : config_setting_(config_setting)
   {
     current_frame_id_ = 0;
     feats_undistort_.reset(new PointCloudXYZI());
@@ -240,17 +230,13 @@ public:
   void build_single_residual(pointWithVar &pv, const VoxelOctoTree *current_octo, const int current_layer, bool &is_sucess, double &prob,
                              PointToPlane &single_ptpl);
 
-  void pubVoxelMap();
+  std::vector<fast_livo2::PlaneVisual> planeVisuals();
 
   void mapSliding();
   void clearMemOutOfMap(const int& x_max,const int& x_min,const int& y_max,const int& y_min,const int& z_max,const int& z_min );
 
 private:
   void GetUpdatePlane(const VoxelOctoTree *current_octo, const int pub_max_voxel_layer, std::vector<VoxelPlane> &plane_list);
-
-  void pubSinglePlane(visualization_msgs::MarkerArray &plane_pub, const std::string plane_ns, const VoxelPlane &single_plane, const float alpha,
-                      const Eigen::Vector3d rgb);
-  void CalcVectQuation(const Eigen::Vector3d &x_vec, const Eigen::Vector3d &y_vec, const Eigen::Vector3d &z_vec, geometry_msgs::Quaternion &q);
 
   void mapJet(double v, double vmin, double vmax, uint8_t &r, uint8_t &g, uint8_t &b);
 };

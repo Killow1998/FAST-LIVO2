@@ -1,4 +1,4 @@
-/* 
+/*
 This file is part of FAST-LIVO2: Fast, Direct LiDAR-Inertial-Visual Odometry.
 
 Developer: Chunran Zheng <zhengcr@connect.hku.hk>
@@ -21,7 +21,7 @@ VisualPoint::VisualPoint(const Vector3d &pos)
 {
 }
 
-VisualPoint::~VisualPoint() 
+VisualPoint::~VisualPoint()
 {
   for (auto it = obs_.begin(), ite = obs_.end(); it != ite; ++it)
   {
@@ -81,13 +81,11 @@ bool VisualPoint::getCloseViewObs(const Vector3d &framepos, Feature *&ftr, const
 
   // if(pixel_dist > 200)
   // {
-  //   ROS_ERROR("The pixel dist exceeds 200.");
   //   return false;
   // }
 
   if (min_cos_angle < 0.5) // assume that observations larger than 60° are useless 0.5
   {
-    // ROS_ERROR("The obseved angle is larger than 60°.");
     return false;
   }
 

@@ -16,10 +16,10 @@ which is included as part of this source code package.
 #include <Eigen/Eigen>
 #include "common_lib.h"
 #include <condition_variable>
-#include <nav_msgs/Odometry.h>
+
 #include <utils/so3_math.h>
 #include <fstream>
-const bool time_list(PointType &x, PointType &y) { return (x.curvature < y.curvature); }
+inline bool time_list(PointType &x, PointType &y) { return (x.curvature < y.curvature); }
 
 /// *************IMU Process and undistortion
 class ImuProcess
@@ -31,7 +31,7 @@ public:
   ~ImuProcess();
 
   void Reset();
-  void Reset(double start_timestamp, const sensor_msgs::ImuConstPtr &lastimu);
+  void Reset(double start_timestamp, const fast_livo2::ImuSample::ConstPtr &lastimu);
   void set_extrinsic(const V3D &transl, const M3D &rot);
   void set_extrinsic(const V3D &transl);
   void set_extrinsic(const MD(4, 4) & T);
@@ -48,9 +48,9 @@ public:
   void Process2(LidarMeasureGroup &lidar_meas, StatesGroup &stat, PointCloudXYZI::Ptr cur_pcl_un_);
   void UndistortPcl(LidarMeasureGroup &lidar_meas, StatesGroup &state_inout, PointCloudXYZI &pcl_out);
 
-  ofstream fout_imu;
+  std::string report;
   double IMU_mean_acc_norm;
-  V3D unbiased_gyr;
+  const V3D &angularVelocity() const { return angvel_last; }
 
   V3D cov_acc;
   V3D cov_gyr;
@@ -68,7 +68,7 @@ private:
   void IMU_init(const MeasureGroup &meas, StatesGroup &state, int &N);
   void Forward_without_imu(LidarMeasureGroup &meas, StatesGroup &state_inout, PointCloudXYZI &pcl_out);
   PointCloudXYZI pcl_wait_proc;
-  sensor_msgs::ImuConstPtr last_imu;
+  fast_livo2::ImuSample::ConstPtr last_imu;
   PointCloudXYZI::Ptr cur_pcl_un_;
   vector<Pose6D> IMUpose;
   M3D Lid_rot_to_IMU;

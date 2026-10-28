@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>fast_livo</name><version>0.1.0</version>
+  <description>FAST-LIVO2 shared C++ core and thin noetic adapter.</description>
+  <maintainer email="zhengcr@connect.hku.hk">Chunran Zheng</maintainer>
+  <license>GPL-2.0</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roscpp</depend>
+  <depend>livox_ros_driver</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>pcl_conversions</depend>
+  <depend>cv_bridge</depend>
+  <depend>visualization_msgs</depend>
+  <depend>eigen</depend>
+  <depend>libpcl-all-dev</depend>
+  <depend>libopencv-dev</depend>
+  <exec_depend>image_transport</exec_depend>
+  <exec_depend>compressed_image_transport</exec_depend>
+  <exec_depend>rviz</exec_depend>
+  <test_depend>gtest</test_depend>
+  <test_depend>yaml-cpp</test_depend>
+  <export><build_type>catkin</build_type></export>
+</package>

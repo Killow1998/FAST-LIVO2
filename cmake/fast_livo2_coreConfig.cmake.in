@@ -1,0 +1,6 @@
+@PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+find_dependency(Eigen3)
+find_dependency(PCL COMPONENTS common)
+find_dependency(OpenCV)
+include("${CMAKE_CURRENT_LIST_DIR}/fast_livo2_coreTargets.cmake")

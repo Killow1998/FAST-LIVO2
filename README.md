@@ -46,54 +46,15 @@ Our associate dataset [**FAST-LIVO2-Dataset**](https://connecthkuhk-my.sharepoin
 ### 1.5 Our LiDAR-camera calibration method
 The [**FAST-Calib**](https://github.com/hku-mars/FAST-Calib) toolkit is recommended. Its output extrinsic parameters can be directly filled into the YAML file. 
 
-## 2. Prerequisited
+## 2. Shared core and ROS adapters
 
-### 2.1 Ubuntu and ROS
+This branch uses one ROS-independent C++ Mapper with thin Noetic and Humble adapters. See [build and deployment](docs/build.md) and [N3M integration evidence](docs/n3m_frontend.md). The separate ROS Vikit package and a global Sophus installation are no longer required; compatible numerical/camera sources are private dependencies.
 
-Ubuntu 18.04~20.04.  [ROS Installation](http://wiki.ros.org/ROS/Installation).
-
-### 2.2 PCL && Eigen && OpenCV
-
-PCL>=1.8, Follow [PCL Installation](https://pointclouds.org/). 
-
-Eigen>=3.3.4, Follow [Eigen Installation](https://eigen.tuxfamily.org/index.php?title=Main_Page).
-
-OpenCV>=4.2, Follow [Opencv Installation](http://opencv.org/).
-
-### 2.3 Sophus
-
-Sophus Installation for the non-templated/double-only version.
-
-```bash
-git clone https://github.com/strasdat/Sophus.git
-cd Sophus
-git checkout a621ff
-mkdir build && cd build && cmake ..
-make
-sudo make install
-```
-
-### 2.4 Vikit
-
-Vikit contains camera models, some math and interpolation functions that we need. Vikit is a catkin project, therefore, download it into your catkin workspace source folder.
-
-```bash
-# Different from the one used in fast-livo1
-cd catkin_ws/src
-git clone https://github.com/xuankuzcr/rpg_vikit.git 
-```
+Simulation mapping and MID360 map continuation/reload have passed the recorded tests. The tested Avia continuation and saved-map recovery cases still have failures; the validation record separates these limits from successful frontend integration.
 
 ## 3. Build
 
-Clone the repository and catkin_make:
-
-```
-cd ~/catkin_ws/src
-git clone https://github.com/hku-mars/FAST-LIVO2
-cd ../
-catkin_make
-source ~/catkin_ws/devel/setup.bash
-```
+Use the standalone `core/`, selected `noetic/`, or `humble/` entry described in [docs/build.md](docs/build.md). Keep Debug, Release and the two ROS distributions in separate build prefixes. Existing installed frontends and navigation frozen libraries need not be replaced for validation.
 
 ## 4. Run our examples
 

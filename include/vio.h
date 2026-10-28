@@ -19,7 +19,6 @@ which is included as part of this source code package.
 #include <pcl/filters/voxel_grid.h>
 #include <set>
 #include <vikit/math_utils.h>
-#include <vikit/robust_cost.h>
 #include <vikit/vision.h>
 #include <vikit/pinhole_camera.h>
 
@@ -83,7 +82,10 @@ public:
 class VIOManager
 {
 public:
+  int num_threads = 4;
+  std::string output_directory = ROOT_DIR;
   int grid_size;
+  double voxel_size = 0.5;
   vk::AbstractCamera *cam;
   vk::PinholeCamera *pinhole_cam;
   StatesGroup *state;

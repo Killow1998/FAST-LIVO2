@@ -17,9 +17,9 @@ which is included as part of this source code package.
 #include <utils/types.h>
 #include <utils/color.h>
 #include <opencv2/opencv.hpp>
-#include <sensor_msgs/Imu.h>
+#include <fast_livo2/types.h>
 #include <sophus/se3.h>
-#include <tf/transform_broadcaster.h>
+
 
 using namespace std;
 using namespace Eigen;
@@ -33,7 +33,6 @@ using namespace Sophus;
 #define SIZE_SMALL (100)
 #define VEC_FROM_ARRAY(v) v[0], v[1], v[2]
 #define MAT_FROM_ARRAY(v) v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8]
-#define DEBUG_FILE_DIR(name) (string(string(ROOT_DIR) + "Log/" + name))
 
 enum LID_TYPE
 {
@@ -63,7 +62,7 @@ struct MeasureGroup
 {
   double vio_time;
   double lio_time;
-  deque<sensor_msgs::Imu::ConstPtr> imu;
+  deque<fast_livo2::ImuSample::ConstPtr> imu;
   cv::Mat img;
   MeasureGroup()
   {
