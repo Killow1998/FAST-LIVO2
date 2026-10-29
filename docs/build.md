@@ -1,5 +1,7 @@
 # Build and use the shared core
 
+[Project overview](../README.md) · [Documentation index](README.md)
+
 One `main` contains the authoritative C++ implementation. `noetic/` and `humble/` only bind parameters, messages, topics and TF. `include/fast_livo2/mapper.h` is the public interface; algorithm headers are private and are not installed. Call one Mapper instance serially. Internal geometric/photometric work can use `common.num_threads` workers (default 4).
 
 The core owns timestamped LiDAR and image queue entries; each payload travels

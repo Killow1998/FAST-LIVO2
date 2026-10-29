@@ -1,6 +1,8 @@
 # N3M frontend integration — 2026-10-28
 
-One local `main` contains a ROS-independent C++ Mapper and thin native Noetic/Humble nodes. The tested Avia and MID360 mapping, continuation and regenerated-map reload paths pass the four-core fixtures. **Continuation requires the N3M shared-core repair `eb4421c`; previously corrupted maps must be rebuilt from raw input.** The installed programs and navigation frozen libraries were not replaced.
+[Project overview](../README.md) · [Documentation index](README.md)
+
+One `main` contains a ROS-independent C++ Mapper and thin native Noetic/Humble nodes. The tested Avia and MID360 mapping, continuation and regenerated-map reload paths pass the four-core fixtures. **Continuation requires the N3M shared-core repair `eb4421c`; previously corrupted maps must be rebuilt from raw input.** The installed programs and navigation frozen libraries were not replaced.
 
 ## Architecture and input contract
 
