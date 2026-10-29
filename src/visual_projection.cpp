@@ -61,8 +61,6 @@ void VIOManager::getWarpMatrixAffineHomography(const vk::AbstractCamera &cam, co
   const int kHalfPatchSize = 4;
   V3D f_du_ref(cam.cam2world(px_ref + Eigen::Vector2d(kHalfPatchSize, 0) * (1 << level_ref)));
   V3D f_dv_ref(cam.cam2world(px_ref + Eigen::Vector2d(0, kHalfPatchSize) * (1 << level_ref)));
-  //   f_du_ref = f_du_ref/f_du_ref[2];
-  //   f_dv_ref = f_dv_ref/f_dv_ref[2];
   const V3D f_cur(H_cur_ref * xyz_ref);
   const V3D f_du_cur = H_cur_ref * f_du_ref;
   const V3D f_dv_cur = H_cur_ref * f_dv_ref;
@@ -97,14 +95,14 @@ void VIOManager::warpAffine(const Matrix2d &A_cur_ref, const cv::Mat &img_ref, c
   const Matrix2f A_ref_cur = A_cur_ref.inverse().cast<float>();
   if (isnan(A_ref_cur(0, 0)))
   {
-    printf("Affine warp is NaN, probably camera has no translation\n"); // TODO
+    printf("Affine warp is NaN, probably camera has no translation\n");
     return;
   }
 
   float *patch_ptr = patch;
   for (int y = 0; y < patch_size; ++y)
   {
-    for (int x = 0; x < patch_size; ++x) //, ++patch_ptr)
+    for (int x = 0; x < patch_size; ++x)
     {
       Vector2f px_patch(x - halfpatch_size, y - halfpatch_size);
       px_patch *= (1 << search_level);

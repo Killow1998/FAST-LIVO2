@@ -1,0 +1,701 @@
+{
+  "date": "2026-10-28",
+  "scope": "Structural cleanup after FAST-LIVO2/N3M integration; no new features or acceptance changes",
+  "before_commits": {
+    "FAST_LIVO2": "3bdc4ca",
+    "n3mapping": "dda1c11"
+  },
+  "cpus": [
+    0,
+    2,
+    4,
+    6
+  ],
+  "source_fingerprints": {
+    "n3mapping": {
+      "files": 450,
+      "sha256": "c701749c61cca7b9775f8ce87e77489dfb996996b6ee2425034670c094ddeb9e"
+    },
+    "FAST_LIVO2": {
+      "files": 84,
+      "sha256": "a00a6efc35e39c7e2d6dee90ee4ec3a39b71b523f8bf7a21ae14ae4de77a53f6"
+    }
+  },
+  "binaries": {
+    "frontend_standalone_core": {
+      "file": "/home/user/ros_ws/to_migrate_ws/build/fast_livo2/integration/profiles/core-release-make/libfast_livo2_core.so",
+      "sha256": "bbbb5bf158b749a564805b498b20bf1986345dbdcbf8ada26ce4a9b6a4063ab0"
+    },
+    "frontend_humble_core": {
+      "file": "/home/user/ros_ws/to_migrate_ws/build/fast_livo2/integration/profiles/humble-release/build/fast_livo/libfast_livo2_core.so",
+      "sha256": "51482e471e997eac2a6d1620709d23b6ffa01ce8e134f6de8293e463fa59e7d5"
+    },
+    "frontend_humble_node": {
+      "file": "/home/user/ros_ws/to_migrate_ws/build/fast_livo2/integration/profiles/humble-release/build/fast_livo/fastlivo_mapping",
+      "sha256": "b42300198eec85b124058f8ebae533a3fb0edce1642dd31069fc6e207b4c9ac5"
+    },
+    "frontend_noetic_core": {
+      "file": "/home/user/ros_ws/to_migrate_ws/build/fast_livo2/integration/profiles/noetic-release/build/fast_livo/libfast_livo2_core.so",
+      "sha256": "0501fa0caa9c93922fe69aef85cbff44a875765e6d1f532e0ed80b47edd35d19"
+    },
+    "frontend_noetic_node": {
+      "file": "/home/user/ros_ws/to_migrate_ws/build/fast_livo2/integration/profiles/noetic-release/devel/.private/fast_livo/lib/fast_livo/fastlivo_mapping",
+      "sha256": "f32181c73423622bb01e1600994dc5e3373228053bc3d754c8efbfa789f35663"
+    },
+    "backend_humble_core": {
+      "file": "/home/user/ros_ws/to_migrate_ws/build/fast_livo2/integration/profiles/n3m-humble/build/n3mapping/libn3mapping_core.so",
+      "sha256": "c1cdc74350e77f11405a8133170dda135f7bfe0060866885f65c7eb53454c0b1"
+    },
+    "backend_humble_node": {
+      "file": "/home/user/ros_ws/to_migrate_ws/build/fast_livo2/integration/profiles/n3m-humble/build/n3mapping/n3mapping_node",
+      "sha256": "dc32713e9f556528c3f948cc14f53fabab1d8e448aa5832789b0da2f28aa39c7"
+    },
+    "backend_noetic_core": {
+      "file": "/home/user/ros_ws/to_migrate_ws/build/fast_livo2/integration/profiles/n3m-noetic/install-shared/lib/libn3mapping_core.so",
+      "sha256": "95cf94753c6f4bd066f914b91f0f362e309a1cbbf84eb3be4c396ba840bbb60d"
+    },
+    "backend_noetic_node": {
+      "file": "/home/user/ros_ws/to_migrate_ws/build/fast_livo2/integration/profiles/n3m-noetic/install-shared/lib/n3mapping/n3mapping_node",
+      "sha256": "66280ddf6872ab50ef361747b96d57faf2cb207b66272e7f6637bda5592b8c9c"
+    },
+    "frontend_asan_core": {
+      "file": "/home/user/ros_ws/to_migrate_ws/build/fast_livo2/integration/profiles/core-asan/libfast_livo2_core.so",
+      "sha256": "0a1f7e02345d11f2b545ad7cdc300ca27b8ad11fd3a748ca28e8b847d41184ea"
+    }
+  },
+  "tests": {
+    "n3m_humble": {
+      "passed": 69,
+      "total": 69
+    },
+    "n3m_noetic": {
+      "passed": 67,
+      "total": 67
+    },
+    "frontend_preprocessing": "6 cases pass in standalone Release, Humble, Noetic and ASan builds",
+    "asan_ubsan_lsan": {
+      "near_wall_frames": 1093,
+      "passed": true,
+      "flags": "-O1 -g1 -fsanitize=address,undefined -fno-omit-frame-pointer -DEIGEN_MALLOC_ALREADY_ALIGNED=1"
+    },
+    "noetic_parameter_contract": "namespace precedence, empty map default and explicit map override pass"
+  },
+  "precision_scope": "simulation truth excluded from estimation; fixed map transform for continuation/reload",
+  "limits": [
+    "Ideal 320x240 simulation camera, not calibrated hardware",
+    "Historical corrupted maps still require regeneration",
+    "Camera-disabled corridor accuracy remains unqualified",
+    "One native A/B resource sample per fixture; not an RK3588 performance guarantee",
+    "Experimental N3M build product status remains UNVERIFIED; no new release tag"
+  ],
+  "code_reduction": {
+    "FAST_LIVO2": {
+      "code_lines_before": 8624,
+      "code_lines_after": 7721,
+      "net_removed": 903
+    },
+    "n3mapping": {
+      "code_lines_before": 117700,
+      "code_lines_after": 117245,
+      "net_removed": 455
+    }
+  },
+  "native_ablation": {
+    "avia_normal_range": {
+      "before_frames": 1069,
+      "after_frames": 1069,
+      "byte_identical": true,
+      "maximum_position_delta_m": 0.0,
+      "before": {
+        "wall_s": 12.03,
+        "cpu_s": 17.88,
+        "peak_rss_mib": 215.15234375
+      },
+      "after": {
+        "wall_s": 10.17,
+        "cpu_s": 11.879999999999999,
+        "peak_rss_mib": 218.734375
+      }
+    },
+    "avia_textured_final": {
+      "before_frames": 1093,
+      "after_frames": 1093,
+      "byte_identical": true,
+      "maximum_position_delta_m": 0.0,
+      "before": {
+        "wall_s": 11.98,
+        "cpu_s": 17.67,
+        "peak_rss_mib": 220.46875
+      },
+      "after": {
+        "wall_s": 10.38,
+        "cpu_s": 11.89,
+        "peak_rss_mib": 219.52734375
+      }
+    },
+    "mid360_normal_range": {
+      "before_frames": 1069,
+      "after_frames": 1069,
+      "byte_identical": false,
+      "maximum_position_delta_m": 0.006262300922298292,
+      "before": {
+        "wall_s": 13.87,
+        "cpu_s": 21.3,
+        "peak_rss_mib": 223.9765625
+      },
+      "after": {
+        "wall_s": 11.43,
+        "cpu_s": 13.29,
+        "peak_rss_mib": 230.23046875
+      }
+    }
+  },
+  "native_truth": {
+    "final_before_avia_normal_range": {
+      "frames": 1069,
+      "maximum_cm": 9.382933897602502,
+      "rmse_cm": 5.104332950371514,
+      "angle_rmse_deg": 0.23936842080376608,
+      "angle_max_deg": 0.6846443520767639,
+      "alignment": "one fixed first-pose SE3; no trajectory or scale fitting"
+    },
+    "final_after_avia_normal_range": {
+      "frames": 1069,
+      "maximum_cm": 9.382933897602502,
+      "rmse_cm": 5.104332950371514,
+      "angle_rmse_deg": 0.23936842080376608,
+      "angle_max_deg": 0.6846443520767639,
+      "alignment": "one fixed first-pose SE3; no trajectory or scale fitting"
+    },
+    "final_before_avia_textured_final": {
+      "frames": 1093,
+      "maximum_cm": 5.41517620256768,
+      "rmse_cm": 3.1867140864619268,
+      "angle_rmse_deg": 0.2645400011461951,
+      "angle_max_deg": 1.70741574584586,
+      "alignment": "one fixed first-pose SE3; no trajectory or scale fitting"
+    },
+    "final_after_avia_textured_final": {
+      "frames": 1093,
+      "maximum_cm": 5.41517620256768,
+      "rmse_cm": 3.1867140864619268,
+      "angle_rmse_deg": 0.2645400011461951,
+      "angle_max_deg": 1.70741574584586,
+      "alignment": "one fixed first-pose SE3; no trajectory or scale fitting"
+    },
+    "final_before_mid360_normal_range": {
+      "frames": 1069,
+      "maximum_cm": 1.617911513707417,
+      "rmse_cm": 0.48092969833748017,
+      "angle_rmse_deg": 0.05932429722304387,
+      "angle_max_deg": 0.31700412176321774,
+      "alignment": "one fixed first-pose SE3; no trajectory or scale fitting"
+    },
+    "final_after_mid360_normal_range": {
+      "frames": 1069,
+      "maximum_cm": 1.617911513707417,
+      "rmse_cm": 0.4806990909503363,
+      "angle_rmse_deg": 0.059267189551761794,
+      "angle_max_deg": 0.27167374474591677,
+      "alignment": "one fixed first-pose SE3; no trajectory or scale fitting"
+    }
+  },
+  "sensor_modes": {
+    "lio_only": {
+      "before_frames": 1069,
+      "after_frames": 1069,
+      "byte_identical": true,
+      "maximum_position_delta_m": 0.0
+    },
+    "lo_only": {
+      "before_frames": 1073,
+      "after_frames": 1073,
+      "byte_identical": true,
+      "maximum_position_delta_m": 0.0
+    }
+  },
+  "fixed14": [
+    {
+      "id": "01_west_corridor",
+      "outputs_before": 292,
+      "outputs_after": 292,
+      "locks_before": [
+        4
+      ],
+      "locks_after": [
+        4
+      ],
+      "max_pose_component_delta": 2.246466901389965e-16,
+      "decision_mismatches": 0,
+      "maximum_m": 0.008391589522315876
+    },
+    {
+      "id": "02_east_corridor",
+      "outputs_before": 292,
+      "outputs_after": 292,
+      "locks_before": [
+        4
+      ],
+      "locks_after": [
+        4
+      ],
+      "max_pose_component_delta": 8.881784197001252e-16,
+      "decision_mismatches": 0,
+      "maximum_m": 0.011538685881210943
+    },
+    {
+      "id": "03_south_corridor",
+      "outputs_before": 292,
+      "outputs_after": 292,
+      "locks_before": [
+        4
+      ],
+      "locks_after": [
+        4
+      ],
+      "max_pose_component_delta": 2.7755575615628914e-17,
+      "decision_mismatches": 0,
+      "maximum_m": 0.009945323162106657
+    },
+    {
+      "id": "04_north_corridor",
+      "outputs_before": 292,
+      "outputs_after": 292,
+      "locks_before": [
+        4
+      ],
+      "locks_after": [
+        4
+      ],
+      "max_pose_component_delta": 2.0816681711721685e-17,
+      "decision_mismatches": 0,
+      "maximum_m": 0.006832165976099774
+    },
+    {
+      "id": "05_southwest_office",
+      "outputs_before": 292,
+      "outputs_after": 292,
+      "locks_before": [
+        4
+      ],
+      "locks_after": [
+        4
+      ],
+      "max_pose_component_delta": 3.3306690738754696e-16,
+      "decision_mismatches": 0,
+      "maximum_m": 0.011978283879506406
+    },
+    {
+      "id": "06_south_meeting",
+      "outputs_before": 292,
+      "outputs_after": 292,
+      "locks_before": [
+        4
+      ],
+      "locks_after": [
+        4
+      ],
+      "max_pose_component_delta": 3.469446951953614e-17,
+      "decision_mismatches": 0,
+      "maximum_m": 0.014112885974754241
+    },
+    {
+      "id": "07_south_pillars",
+      "outputs_before": 292,
+      "outputs_after": 292,
+      "locks_before": [
+        4
+      ],
+      "locks_after": [
+        4
+      ],
+      "max_pose_component_delta": 4.440892098500626e-16,
+      "decision_mismatches": 0,
+      "maximum_m": 0.024809060892936476
+    },
+    {
+      "id": "08_west_shelves",
+      "outputs_before": 292,
+      "outputs_after": 292,
+      "locks_before": [
+        4
+      ],
+      "locks_after": [
+        4
+      ],
+      "max_pose_component_delta": 4.440892098500626e-16,
+      "decision_mismatches": 0,
+      "maximum_m": 0.010355671855783387
+    },
+    {
+      "id": "09_east_shelves",
+      "outputs_before": 292,
+      "outputs_after": 292,
+      "locks_before": [
+        4
+      ],
+      "locks_after": [
+        4
+      ],
+      "max_pose_component_delta": 2.220446049250313e-16,
+      "decision_mismatches": 0,
+      "maximum_m": 0.014101758520884302
+    },
+    {
+      "id": "10_northwest_meeting",
+      "outputs_before": 292,
+      "outputs_after": 292,
+      "locks_before": [
+        4
+      ],
+      "locks_after": [
+        4
+      ],
+      "max_pose_component_delta": 4.440892098500626e-16,
+      "decision_mismatches": 0,
+      "maximum_m": 0.00910801189043436
+    },
+    {
+      "id": "11_northeast_pillars",
+      "outputs_before": 292,
+      "outputs_after": 292,
+      "locks_before": [
+        4
+      ],
+      "locks_after": [
+        4
+      ],
+      "max_pose_component_delta": 6.938893903907228e-17,
+      "decision_mismatches": 0,
+      "maximum_m": 0.01514206026709409
+    },
+    {
+      "id": "12_north_office",
+      "outputs_before": 292,
+      "outputs_after": 292,
+      "locks_before": [
+        4
+      ],
+      "locks_after": [
+        4
+      ],
+      "max_pose_component_delta": 2.7755575615628914e-17,
+      "decision_mismatches": 0,
+      "maximum_m": 0.007026096141037657
+    },
+    {
+      "id": "13_south_door",
+      "outputs_before": 292,
+      "outputs_after": 292,
+      "locks_before": [
+        4
+      ],
+      "locks_after": [
+        4
+      ],
+      "max_pose_component_delta": 8.326672684688674e-17,
+      "decision_mismatches": 0,
+      "maximum_m": 0.021712873951317817
+    },
+    {
+      "id": "14_north_door",
+      "outputs_before": 292,
+      "outputs_after": 292,
+      "locks_before": [
+        4
+      ],
+      "locks_after": [
+        4
+      ],
+      "max_pose_component_delta": 2.7755575615628914e-17,
+      "decision_mismatches": 0,
+      "maximum_m": 0.009183216444264288
+    }
+  ],
+  "motion": {
+    "old": {
+      "before_frames": 2236,
+      "after_frames": 2236,
+      "outputs": 2232,
+      "maximum_m": 0.07936771243843452,
+      "max_pose_component_delta": 1.2434497875801753e-14,
+      "decision_mismatches": 0,
+      "locks": [
+        4
+      ]
+    },
+    "new": {
+      "before_frames": 3666,
+      "after_frames": 3666,
+      "outputs": 3662,
+      "maximum_m": 0.03246851633697608,
+      "max_pose_component_delta": 5.684341886080802e-14,
+      "decision_mismatches": 0,
+      "locks": [
+        4,
+        1938
+      ]
+    }
+  },
+  "ros_matrix": [
+    {
+      "name": "closeout_avia_normal_range_noetic_resume",
+      "duration_s": 107.298,
+      "maximum_cm": 9.02673810258459,
+      "rmse_cm": 4.784104584621888,
+      "frames": 1064,
+      "max_angle_degrees": 0.6127737542695663,
+      "clean_shutdown": true,
+      "qualified": true,
+      "save_s": 0.44749776495154947,
+      "frontend": {
+        "cores_per_input_second": 0.13429886857164158,
+        "peak_rss_mib_including_save": 219.36328125
+      },
+      "n3m": {
+        "cores_per_input_second": 0.5494976607206099,
+        "peak_rss_mib_including_save": 180.7265625
+      }
+    },
+    {
+      "name": "closeout_avia_normal_range_humble_reload",
+      "duration_s": 107.298,
+      "maximum_cm": 8.454216373030793,
+      "rmse_cm": 4.3893303021413335,
+      "frames": 1065,
+      "max_angle_degrees": 0.4953302865193584,
+      "clean_shutdown": true,
+      "qualified": true,
+      "save_s": null,
+      "frontend": {
+        "cores_per_input_second": 0.13392607504333723,
+        "peak_rss_mib_including_save": 314.3828125
+      },
+      "n3m": {
+        "cores_per_input_second": 0.22749725064772874,
+        "peak_rss_mib_including_save": 220.078125
+      }
+    },
+    {
+      "name": "closeout_avia_normal_range_humble_resume",
+      "duration_s": 107.298,
+      "maximum_cm": 7.994924763196487,
+      "rmse_cm": 4.23979357875614,
+      "frames": 1065,
+      "max_angle_degrees": 0.6022211289312935,
+      "clean_shutdown": true,
+      "qualified": true,
+      "save_s": 0.40315949998330325,
+      "frontend": {
+        "cores_per_input_second": 0.13700162165184812,
+        "peak_rss_mib_including_save": 303.16796875
+      },
+      "n3m": {
+        "cores_per_input_second": 0.49395142500326195,
+        "peak_rss_mib_including_save": 256.6015625
+      }
+    },
+    {
+      "name": "closeout_avia_normal_range_noetic_reload",
+      "duration_s": 107.298,
+      "maximum_cm": 8.461666537208592,
+      "rmse_cm": 3.8383406225902665,
+      "frames": 1063,
+      "max_angle_degrees": 0.5856099680843077,
+      "clean_shutdown": true,
+      "qualified": true,
+      "save_s": null,
+      "frontend": {
+        "cores_per_input_second": 0.14212753266603292,
+        "peak_rss_mib_including_save": 222.390625
+      },
+      "n3m": {
+        "cores_per_input_second": 0.2387742548789353,
+        "peak_rss_mib_including_save": 147.87890625
+      }
+    },
+    {
+      "name": "closeout_avia_textured_final_noetic_resume",
+      "duration_s": 109.768,
+      "maximum_cm": 6.1240047759087615,
+      "rmse_cm": 3.4803175175425416,
+      "frames": 1088,
+      "max_angle_degrees": 2.0317040672548385,
+      "clean_shutdown": true,
+      "qualified": true,
+      "save_s": 0.4514276559930295,
+      "frontend": {
+        "cores_per_input_second": 0.132096785948546,
+        "peak_rss_mib_including_save": 228.19921875
+      },
+      "n3m": {
+        "cores_per_input_second": 0.5261096130019678,
+        "peak_rss_mib_including_save": 179.765625
+      }
+    },
+    {
+      "name": "closeout_avia_textured_final_humble_reload",
+      "duration_s": 109.768,
+      "maximum_cm": 5.061305167630699,
+      "rmse_cm": 2.693482868137094,
+      "frames": 1089,
+      "max_angle_degrees": 2.5434382611769926,
+      "clean_shutdown": true,
+      "qualified": true,
+      "save_s": null,
+      "frontend": {
+        "cores_per_input_second": 0.1315501785584141,
+        "peak_rss_mib_including_save": 313.76953125
+      },
+      "n3m": {
+        "cores_per_input_second": 0.22456453611252822,
+        "peak_rss_mib_including_save": 224.5703125
+      }
+    },
+    {
+      "name": "closeout_avia_textured_final_humble_resume",
+      "duration_s": 109.768,
+      "maximum_cm": 5.724396151231771,
+      "rmse_cm": 3.2393982281442164,
+      "frames": 1089,
+      "max_angle_degrees": 1.4795360022126323,
+      "clean_shutdown": true,
+      "qualified": true,
+      "save_s": 0.40099016099702567,
+      "frontend": {
+        "cores_per_input_second": 0.13227898841192332,
+        "peak_rss_mib_including_save": 308.73046875
+      },
+      "n3m": {
+        "cores_per_input_second": 0.47254208876904014,
+        "peak_rss_mib_including_save": 243.93359375
+      }
+    },
+    {
+      "name": "closeout_avia_textured_final_noetic_reload",
+      "duration_s": 109.768,
+      "maximum_cm": 5.404541418701473,
+      "rmse_cm": 2.4992676646786394,
+      "frames": 1088,
+      "max_angle_degrees": 2.2444604520560256,
+      "clean_shutdown": true,
+      "qualified": true,
+      "save_s": null,
+      "frontend": {
+        "cores_per_input_second": 0.12745062313242475,
+        "peak_rss_mib_including_save": 229.07421875
+      },
+      "n3m": {
+        "cores_per_input_second": 0.224109029954085,
+        "peak_rss_mib_including_save": 152.59375
+      }
+    },
+    {
+      "name": "closeout_mid360_normal_range_noetic_resume",
+      "duration_s": 107.298,
+      "maximum_cm": 1.6631311933657422,
+      "rmse_cm": 0.5597604345363238,
+      "frames": 1061,
+      "max_angle_degrees": 0.243771865086776,
+      "clean_shutdown": true,
+      "qualified": true,
+      "save_s": 0.33411903493106365,
+      "frontend": {
+        "cores_per_input_second": 0.1414751439915003,
+        "peak_rss_mib_including_save": 232.94921875
+      },
+      "n3m": {
+        "cores_per_input_second": 0.3833249454789465,
+        "peak_rss_mib_including_save": 155.53125
+      }
+    },
+    {
+      "name": "closeout_mid360_normal_range_humble_reload",
+      "duration_s": 107.298,
+      "maximum_cm": 1.9969483492871456,
+      "rmse_cm": 0.5876606178483116,
+      "frames": 1064,
+      "max_angle_degrees": 0.19575783612009673,
+      "clean_shutdown": true,
+      "qualified": true,
+      "save_s": null,
+      "frontend": {
+        "cores_per_input_second": 0.14044996178866334,
+        "peak_rss_mib_including_save": 308.56640625
+      },
+      "n3m": {
+        "cores_per_input_second": 0.27269846595463104,
+        "peak_rss_mib_including_save": 206.21875
+      }
+    },
+    {
+      "name": "closeout_mid360_normal_range_humble_resume",
+      "duration_s": 107.298,
+      "maximum_cm": 1.794756760456188,
+      "rmse_cm": 0.5642648338051537,
+      "frames": 1063,
+      "max_angle_degrees": 0.23192687286851554,
+      "clean_shutdown": true,
+      "qualified": true,
+      "save_s": 0.3504849000601098,
+      "frontend": {
+        "cores_per_input_second": 0.14072955693489161,
+        "peak_rss_mib_including_save": 307.578125
+      },
+      "n3m": {
+        "cores_per_input_second": 0.3739119088892617,
+        "peak_rss_mib_including_save": 237.375
+      }
+    },
+    {
+      "name": "closeout_mid360_normal_range_noetic_reload",
+      "duration_s": 107.298,
+      "maximum_cm": 1.7730000318642378,
+      "rmse_cm": 0.5722873185087906,
+      "frames": 1062,
+      "max_angle_degrees": 0.23104994299390394,
+      "clean_shutdown": true,
+      "qualified": true,
+      "save_s": null,
+      "frontend": {
+        "cores_per_input_second": 0.13588324106693508,
+        "peak_rss_mib_including_save": 231.16015625
+      },
+      "n3m": {
+        "cores_per_input_second": 0.2816455106339354,
+        "peak_rss_mib_including_save": 143.32421875
+      }
+    }
+  ],
+  "protected": {
+    "n3m_noetic": {
+      "file": "/home/user/ros_ws/to_migrate_ws/build/source_cleanup_20261027/noetic/install/lib/n3mapping/n3mapping_node",
+      "sha256": "7e5996e72b0ef538b832fc068740593a9dd3659044f604ad84c0365fba02bb8f",
+      "unchanged": true
+    },
+    "n3m_humble": {
+      "file": "/home/user/ros_ws/to_migrate_ws/build/source_cleanup_20261027/n3mapping/humble/install/n3mapping/lib/n3mapping/n3mapping_node",
+      "sha256": "94435f701eb20b3b74dbef2422e3fdb03836236962b20357f728f20696de85b3",
+      "unchanged": true
+    },
+    "FAST_LIO": {
+      "head": "d9786240120d755780919c593dc4bec72e0a4949",
+      "status": " D Log/fast_lio_time_log_analysis.m\n D Log/guide.md\n D Log/plot.py\n"
+    }
+  },
+  "parameter_canonical_sha256": {
+    "backend_baseline": "767a4f7a78dbd295ae1182c40d9ec0b149f9902fdd0346759aac25d0d6389fe4",
+    "backend_candidate": "767a4f7a78dbd295ae1182c40d9ec0b149f9902fdd0346759aac25d0d6389fe4"
+  },
+  "livox_message_dependency": {
+    "dependency_headers": [
+      "/validation/profiles/noetic-release/devel/.private/livox_ros_driver/include/livox_ros_driver/CustomMsg.h",
+      "/validation/profiles/noetic-release/devel/.private/livox_ros_driver/include/livox_ros_driver/CustomPoint.h"
+    ],
+    "schema_md5": {
+      "CustomMsg": "e4d6829bdfe657cb6c21a746c86b21a6",
+      "CustomPoint": "109a3cc548bb1f96626be89a5008bd6d"
+    }
+  },
+  "non_executable_final_edits": "Removed trailing whitespace and disabled visual member declarations; all Release core and node binaries remain identical to the qualified binaries."
+}

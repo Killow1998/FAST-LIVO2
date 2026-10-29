@@ -21,7 +21,6 @@ void VIOManager::retrieveFromVisualSparseMap(cv::Mat img, vector<pointWithVar> &
   // downSizeFilter.setInputCloud(pg);
   // downSizeFilter.filter(*pg_down);
 
-  // resetRvizDisplay();
   visual_submap->reset();
 
   // Controls whether to include the visual submap from the previous frame.
@@ -334,7 +333,7 @@ void VIOManager::retrieveFromVisualSparseMap(cv::Mat img, vector<pointWithVar> &
       }
       else
       {
-        if (!pt->getCloseViewObs(new_frame_->pos(), ref_ftr, pc)) continue;
+        if (!pt->getCloseViewObs(new_frame_->pos(), ref_ftr)) continue;
       }
 
       if (normal_en)

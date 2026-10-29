@@ -25,9 +25,13 @@ add_library(fast_livo2_core SHARED
   ${FAST_LIVO2_ROOT}/src/core/runtime_log.cpp
   ${FAST_LIVO2_ROOT}/src/IMU_Processing.cpp
   ${FAST_LIVO2_ROOT}/src/preprocess.cpp
+  ${FAST_LIVO2_ROOT}/src/preprocess_livox.cpp
+  ${FAST_LIVO2_ROOT}/src/preprocess_pcl.cpp
   ${FAST_LIVO2_ROOT}/src/preprocess_features.cpp
   ${FAST_LIVO2_ROOT}/src/preprocess_planes.cpp
   ${FAST_LIVO2_ROOT}/src/voxel_map.cpp
+  ${FAST_LIVO2_ROOT}/src/voxel_octree.cpp
+  ${FAST_LIVO2_ROOT}/src/voxel_estimation.cpp
   ${FAST_LIVO2_ROOT}/src/vio.cpp
   ${FAST_LIVO2_ROOT}/src/visual_projection.cpp
   ${FAST_LIVO2_ROOT}/src/visual_retrieval.cpp

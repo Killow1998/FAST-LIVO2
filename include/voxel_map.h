@@ -17,7 +17,6 @@ which is included as part of this source code package.
 #include <Eigen/Dense>
 #include <fstream>
 #include <cmath>
-#include <mutex>
 #include <omp.h>
 #include <pcl/common/io.h>
 
@@ -29,8 +28,6 @@ which is included as part of this source code package.
 
 #define VOXELMAP_HASH_P 116101
 #define VOXELMAP_MAX_N 10000000000
-
-static int voxel_plane_id = 0;
 
 using VoxelMapConfig = fast_livo2::GeometryConfig;
 
@@ -106,20 +103,12 @@ template <> struct hash<VOXEL_LOCATION>
 };
 } // namespace std
 
-struct DS_POINT
-{
-  float xyz[3];
-  float intensity;
-  int count = 0;
-};
-
 void calcBodyCov(Eigen::Vector3d &pb, const float range_inc, const float degree_inc, Eigen::Matrix3d &cov);
 
 class VoxelOctoTree
 {
 
 public:
-  VoxelOctoTree() = default;
   std::vector<pointWithVar> temp_points_;
   VoxelPlane *plane_ptr_;
   int layer_;
@@ -168,7 +157,6 @@ public:
   void UpdateOctoTree(const pointWithVar &pv);
 
   VoxelOctoTree *find_correspond(Eigen::Vector3d pw);
-  VoxelOctoTree *Insert(const pointWithVar &pv);
 };
 
 
@@ -221,7 +209,6 @@ public:
                       pcl::PointCloud<pcl::PointXYZI>::Ptr &trans_cloud);
 
   void BuildVoxelMap();
-  V3F RGBFromVoxel(const V3D &input_point);
 
   void UpdateVoxelMap(const std::vector<pointWithVar> &input_points);
 

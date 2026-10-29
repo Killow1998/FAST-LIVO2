@@ -170,7 +170,7 @@ void VIOManager::updateVisualMapPoints(cv::Mat img)
     if (pt->obs_.size() >= 30)
     {
       Feature *ref_ftr;
-      pt->findMinScoreFeature(new_frame_->pos(), ref_ftr);
+      pt->findMinScoreFeature(ref_ftr);
       pt->deleteFeatureRef(ref_ftr);
     }
     if (add_flag)

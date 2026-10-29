@@ -2,6 +2,13 @@
 
 One `main` contains the authoritative C++ implementation. `noetic/` and `humble/` only bind parameters, messages, topics and TF. `include/fast_livo2/mapper.h` is the public interface; algorithm headers are private and are not installed. Call one Mapper instance serially. Internal geometric/photometric work can use `common.num_threads` workers (default 4).
 
+The core owns timestamped LiDAR and image queue entries; each payload travels
+with its timestamp. `preprocess.cpp` dispatches inputs, `preprocess_livox.cpp`
+decodes Livox scans, and `preprocess_pcl.cpp` decodes standard point-cloud
+formats. Voxel geometry, map maintenance and state estimation live in
+`voxel_octree.cpp`, `voxel_map.cpp` and `voxel_estimation.cpp`, respectively.
+These files share the existing private types rather than adding manager layers.
+
 ## Standalone
 
 ```
@@ -39,6 +46,10 @@ catkin build fast_livo -j4 -p1
 source devel/setup.bash
 roslaunch fast_livo n3m_frontend.launch config_file:=/path/frontend.yaml camera_file:=/path/camera.yaml
 ```
+
+The Noetic adapter uses the driver's generated `CustomMsg` and `CustomPoint`
+headers directly. The core receives its own ROS-free `LivoxScan` value; it does
+not carry another copy of generated ROS message definitions.
 
 Use a named Debug profile with distinct build/devel directories for development. On Jammy, the validated Noetic environment is the existing Docker image; do not install Noetic over the native Humble environment.
 

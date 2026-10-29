@@ -11,18 +11,18 @@ bool Mapper::Impl::sync(LidarMeasureGroup &meas)
   {
   case ONLY_LIO:
   {
-    if (meas.last_lio_update_time < 0.0) meas.last_lio_update_time = lidar_times.front();
+    if (meas.last_lio_update_time < 0.0) meas.last_lio_update_time = lidar_buffer.front().stamp;
     if (!lidar_pushed)
     {
-      meas.lidar = lidar_buffer.front();
+      meas.lidar = lidar_buffer.front().cloud;
       if (meas.lidar->points.size() <= 1) {
-        lidar_buffer.pop_front(); lidar_times.pop_front();
+        lidar_buffer.pop_front();
         discarded_input = true;
         runtime_log.write("event=scan_discard reason=insufficient_points");
         return false;
       }
 
-      meas.lidar_frame_beg_time = lidar_times.front();
+      meas.lidar_frame_beg_time = lidar_buffer.front().stamp;
       meas.lidar_frame_end_time = meas.lidar_frame_beg_time + meas.lidar->points.back().curvature / double(1000);
       meas.pcl_proc_cur = meas.lidar;
       lidar_pushed = true;
@@ -35,7 +35,6 @@ bool Mapper::Impl::sync(LidarMeasureGroup &meas)
 
     struct MeasureGroup m;
 
-    m.imu.clear();
     m.lio_time = meas.lidar_frame_end_time;
     while (!imu_buffer.empty())
     {
@@ -44,7 +43,6 @@ bool Mapper::Impl::sync(LidarMeasureGroup &meas)
       imu_buffer.pop_front();
     }
     lidar_buffer.pop_front();
-    lidar_times.pop_front();
 
     meas.lio_vio_flg = LIO;
     meas.measures.clear();
@@ -62,17 +60,16 @@ bool Mapper::Impl::sync(LidarMeasureGroup &meas)
     case WAIT:
     case VIO:
     {
-      double img_capture_time = image_times.front() + config.exposure_time_init;
+      double img_capture_time = image_buffer.front().stamp + config.exposure_time_init;
 
-      if (meas.last_lio_update_time < 0.0) meas.last_lio_update_time = lidar_times.front();
+      if (meas.last_lio_update_time < 0.0) meas.last_lio_update_time = lidar_buffer.front().stamp;
 
-      double lid_newest_time = lidar_times.back() + lidar_buffer.back()->points.back().curvature / double(1000);
+      double lid_newest_time = lidar_buffer.back().stamp + lidar_buffer.back().cloud->points.back().curvature / double(1000);
       double imu_newest_time = imu_buffer.back()->seconds();
 
       if (img_capture_time < meas.last_lio_update_time + 0.00001)
       {
         image_buffer.pop_front();
-        image_times.pop_front();
         runtime_log.write("event=image_discard reason=older_than_lidar_update");
         discarded_input = true;
         return false;
@@ -85,8 +82,7 @@ bool Mapper::Impl::sync(LidarMeasureGroup &meas)
 
       struct MeasureGroup m;
 
-      m.imu.clear();
-      m.lio_time = img_capture_time;
+        m.lio_time = img_capture_time;
       while (!imu_buffer.empty())
       {
         if (imu_buffer.front()->seconds() > m.lio_time) break;
@@ -106,9 +102,9 @@ bool Mapper::Impl::sync(LidarMeasureGroup &meas)
 
       while (!lidar_buffer.empty())
       {
-        if (lidar_times.front() > img_capture_time) break;
-        const auto &pcl = lidar_buffer.front()->points;
-        double frame_header_time(lidar_times.front());
+        if (lidar_buffer.front().stamp > img_capture_time) break;
+        const auto &pcl = lidar_buffer.front().cloud->points;
+        double frame_header_time(lidar_buffer.front().stamp);
         float max_offs_time_ms = (m.lio_time - frame_header_time) * 1000.0f;
 
         for (int i = 0; i < pcl.size(); i++)
@@ -126,7 +122,6 @@ bool Mapper::Impl::sync(LidarMeasureGroup &meas)
           }
         }
         lidar_buffer.pop_front();
-        lidar_times.pop_front();
       }
 
       meas.measures.clear();
@@ -137,16 +132,15 @@ bool Mapper::Impl::sync(LidarMeasureGroup &meas)
 
     case LIO:
     {
-      double img_capture_time = image_times.front() + config.exposure_time_init;
+      double img_capture_time = image_buffer.front().stamp + config.exposure_time_init;
       meas.lio_vio_flg = VIO;
       meas.measures.clear();
 
       struct MeasureGroup m;
       m.vio_time = img_capture_time;
       m.lio_time = meas.last_lio_update_time;
-      m.img = image_buffer.front();
+      m.img = image_buffer.front().image;
       image_buffer.pop_front();
-      image_times.pop_front();
       meas.measures.push_back(m);
       lidar_pushed = false;
       return true;
@@ -165,15 +159,14 @@ bool Mapper::Impl::sync(LidarMeasureGroup &meas)
     if (!lidar_pushed)
     {
       if (lidar_buffer.empty())  return false;
-      meas.lidar = lidar_buffer.front();
-      meas.lidar_frame_beg_time = lidar_times.front();
+      meas.lidar = lidar_buffer.front().cloud;
+      meas.lidar_frame_beg_time = lidar_buffer.front().stamp;
       meas.lidar_frame_end_time  = meas.lidar_frame_beg_time + meas.lidar->points.back().curvature / double(1000);
       lidar_pushed = true;
     }
     struct MeasureGroup m;
     m.lio_time = meas.lidar_frame_end_time;
     lidar_buffer.pop_front();
-    lidar_times.pop_front();
     lidar_pushed = false;
     meas.lio_vio_flg = LO;
     meas.measures.clear();

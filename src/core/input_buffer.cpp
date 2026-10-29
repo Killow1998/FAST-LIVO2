@@ -29,12 +29,10 @@ bool Mapper::Impl::enqueueCloud(double stamp, Cloud::Ptr cloud) {
   }
   if (stamp < last_lidar) {
     lidar_buffer.clear();
-    lidar_times.clear();
     lidar_pushed = false;
     runtime_log.write("event=lidar_time_reset");
   }
-  lidar_buffer.push_back(std::move(cloud));
-  lidar_times.push_back(stamp);
+  lidar_buffer.push_back({stamp, std::move(cloud)});
   last_lidar = stamp;
   return true;
 }
@@ -77,8 +75,7 @@ bool Mapper::pushImage(int64_t stamp_ns, cv::Mat image) {
     p.runtime_log.write("event=image_discard reason=expected_bgr8");
     return false;
   }
-  p.image_buffer.push_back(std::move(image));
-  p.image_times.push_back(stamp);
+  p.image_buffer.push_back({stamp, std::move(image)});
   p.last_image = stamp;
   return true;
 }

@@ -115,8 +115,6 @@ public:
 
   double compute_jacobian_time, update_ekf_time;
   double ave_total = 0;
-  // double ave_build_residual_time = 0;
-  // double ave_ekf_time = 0;
 
   int frame_count = 0;
   bool plot_flag;
@@ -173,16 +171,7 @@ public:
   int getBestSearchLevel(const Matrix2d &A_cur_ref, const int max_level);
   V3F getInterpolatedPixel(cv::Mat img, V2D pc);
   
-  // void resetRvizDisplay();
-  // deque<VisualPoint *> map_cur_frame;
-  // deque<VisualPoint *> sub_map_ray;
-  // deque<VisualPoint *> sub_map_ray_fov;
-  // deque<VisualPoint *> visual_sub_map_cur;
-  // deque<VisualPoint *> visual_converged_point;
-  // std::vector<std::vector<V3D>> sample_points;
 
-  // PointCloudXYZI::Ptr pg_down;
-  // pcl::VoxelGrid<PointType> downSizeFilter;
 };
 typedef std::shared_ptr<VIOManager> VIOManagerPtr;
 

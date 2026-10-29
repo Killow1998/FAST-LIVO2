@@ -11,6 +11,7 @@ which is included as part of this source code package.
 */
 
 #include "voxel_map.h"
+#include <cstdint>
 
 void calcBodyCov(Eigen::Vector3d &pb, const float range_inc, const float degree_inc, Eigen::Matrix3d &cov)
 {
@@ -31,464 +32,6 @@ void calcBodyCov(Eigen::Vector3d &pb, const float range_inc, const float degree_
   N << base_vector1(0), base_vector2(0), base_vector1(1), base_vector2(1), base_vector1(2), base_vector2(2);
   Eigen::Matrix<double, 3, 2> A = range * direction_hat * N;
   cov = direction * range_var * direction.transpose() + A * direction_var * A.transpose();
-}
-
-void VoxelOctoTree::init_plane(const std::vector<pointWithVar> &points, VoxelPlane *plane)
-{
-  plane->plane_var_ = Eigen::Matrix<double, 6, 6>::Zero();
-  plane->covariance_ = Eigen::Matrix3d::Zero();
-  plane->center_ = Eigen::Vector3d::Zero();
-  plane->normal_ = Eigen::Vector3d::Zero();
-  plane->points_size_ = points.size();
-  plane->radius_ = 0;
-  for (auto pv : points)
-  {
-    plane->covariance_ += pv.point_w * pv.point_w.transpose();
-    plane->center_ += pv.point_w;
-  }
-  plane->center_ = plane->center_ / plane->points_size_;
-  plane->covariance_ = plane->covariance_ / plane->points_size_ - plane->center_ * plane->center_.transpose();
-  Eigen::EigenSolver<Eigen::Matrix3d> es(plane->covariance_);
-  Eigen::Matrix3cd evecs = es.eigenvectors();
-  Eigen::Vector3cd evals = es.eigenvalues();
-  Eigen::Vector3d evalsReal;
-  evalsReal = evals.real();
-  Eigen::Matrix3f::Index evalsMin, evalsMax;
-  evalsReal.rowwise().sum().minCoeff(&evalsMin);
-  evalsReal.rowwise().sum().maxCoeff(&evalsMax);
-  int evalsMid = 3 - evalsMin - evalsMax;
-  Eigen::Vector3d evecMin = evecs.real().col(evalsMin);
-  Eigen::Vector3d evecMid = evecs.real().col(evalsMid);
-  Eigen::Vector3d evecMax = evecs.real().col(evalsMax);
-  Eigen::Matrix3d J_Q;
-  J_Q << 1.0 / plane->points_size_, 0, 0, 0, 1.0 / plane->points_size_, 0, 0, 0, 1.0 / plane->points_size_;
-  // && evalsReal(evalsMid) > 0.05
-  //&& evalsReal(evalsMid) > 0.01
-  if (evalsReal(evalsMin) < planer_threshold_)
-  {
-    for (int i = 0; i < points.size(); i++)
-    {
-      Eigen::Matrix<double, 6, 3> J;
-      Eigen::Matrix3d F;
-      for (int m = 0; m < 3; m++)
-      {
-        if (m != (int)evalsMin)
-        {
-          Eigen::Matrix<double, 1, 3> F_m =
-              (points[i].point_w - plane->center_).transpose() / ((plane->points_size_) * (evalsReal[evalsMin] - evalsReal[m])) *
-              (evecs.real().col(m) * evecs.real().col(evalsMin).transpose() + evecs.real().col(evalsMin) * evecs.real().col(m).transpose());
-          F.row(m) = F_m;
-        }
-        else
-        {
-          Eigen::Matrix<double, 1, 3> F_m;
-          F_m << 0, 0, 0;
-          F.row(m) = F_m;
-        }
-      }
-      J.block<3, 3>(0, 0) = evecs.real() * F;
-      J.block<3, 3>(3, 0) = J_Q;
-      plane->plane_var_ += J * points[i].var * J.transpose();
-    }
-
-    plane->normal_ << evecs.real()(0, evalsMin), evecs.real()(1, evalsMin), evecs.real()(2, evalsMin);
-    plane->y_normal_ << evecs.real()(0, evalsMid), evecs.real()(1, evalsMid), evecs.real()(2, evalsMid);
-    plane->x_normal_ << evecs.real()(0, evalsMax), evecs.real()(1, evalsMax), evecs.real()(2, evalsMax);
-    plane->min_eigen_value_ = evalsReal(evalsMin);
-    plane->mid_eigen_value_ = evalsReal(evalsMid);
-    plane->max_eigen_value_ = evalsReal(evalsMax);
-    plane->radius_ = sqrt(evalsReal(evalsMax));
-    plane->d_ = -(plane->normal_(0) * plane->center_(0) + plane->normal_(1) * plane->center_(1) + plane->normal_(2) * plane->center_(2));
-    plane->is_plane_ = true;
-    plane->is_update_ = true;
-    if (!plane->is_init_)
-    {
-      plane->id_ = voxel_plane_id;
-      voxel_plane_id++;
-      plane->is_init_ = true;
-    }
-  }
-  else
-  {
-    plane->is_update_ = true;
-    plane->is_plane_ = false;
-  }
-}
-
-void VoxelOctoTree::init_octo_tree()
-{
-  if (temp_points_.size() > points_size_threshold_)
-  {
-    init_plane(temp_points_, plane_ptr_);
-    if (plane_ptr_->is_plane_ == true)
-    {
-      octo_state_ = 0;
-      // new added
-      if (temp_points_.size() > max_points_num_)
-      {
-        update_enable_ = false;
-        std::vector<pointWithVar>().swap(temp_points_);
-        new_points_ = 0;
-      }
-    }
-    else
-    {
-      octo_state_ = 1;
-      cut_octo_tree();
-    }
-    init_octo_ = true;
-    new_points_ = 0;
-  }
-}
-
-void VoxelOctoTree::cut_octo_tree()
-{
-  if (layer_ >= max_layer_)
-  {
-    octo_state_ = 0;
-    return;
-  }
-  for (size_t i = 0; i < temp_points_.size(); i++)
-  {
-    int xyz[3] = {0, 0, 0};
-    if (temp_points_[i].point_w[0] > voxel_center_[0]) { xyz[0] = 1; }
-    if (temp_points_[i].point_w[1] > voxel_center_[1]) { xyz[1] = 1; }
-    if (temp_points_[i].point_w[2] > voxel_center_[2]) { xyz[2] = 1; }
-    int leafnum = 4 * xyz[0] + 2 * xyz[1] + xyz[2];
-    if (leaves_[leafnum] == nullptr)
-    {
-      leaves_[leafnum] = new VoxelOctoTree(max_layer_, layer_ + 1, layer_init_num_[layer_ + 1], max_points_num_, planer_threshold_);
-      leaves_[leafnum]->layer_init_num_ = layer_init_num_;
-      leaves_[leafnum]->voxel_center_[0] = voxel_center_[0] + (2 * xyz[0] - 1) * quater_length_;
-      leaves_[leafnum]->voxel_center_[1] = voxel_center_[1] + (2 * xyz[1] - 1) * quater_length_;
-      leaves_[leafnum]->voxel_center_[2] = voxel_center_[2] + (2 * xyz[2] - 1) * quater_length_;
-      leaves_[leafnum]->quater_length_ = quater_length_ / 2;
-    }
-    leaves_[leafnum]->temp_points_.push_back(temp_points_[i]);
-    leaves_[leafnum]->new_points_++;
-  }
-  for (uint i = 0; i < 8; i++)
-  {
-    if (leaves_[i] != nullptr)
-    {
-      if (leaves_[i]->temp_points_.size() > leaves_[i]->points_size_threshold_)
-      {
-        init_plane(leaves_[i]->temp_points_, leaves_[i]->plane_ptr_);
-        if (leaves_[i]->plane_ptr_->is_plane_)
-        {
-          leaves_[i]->octo_state_ = 0;
-          // new added
-          if (leaves_[i]->temp_points_.size() > leaves_[i]->max_points_num_)
-          {
-            leaves_[i]->update_enable_ = false;
-            std::vector<pointWithVar>().swap(leaves_[i]->temp_points_);
-            new_points_ = 0;
-          }
-        }
-        else
-        {
-          leaves_[i]->octo_state_ = 1;
-          leaves_[i]->cut_octo_tree();
-        }
-        leaves_[i]->init_octo_ = true;
-        leaves_[i]->new_points_ = 0;
-      }
-    }
-  }
-  // Split nodes route later observations to their children.
-  std::vector<pointWithVar>().swap(temp_points_);
-}
-
-void VoxelOctoTree::UpdateOctoTree(const pointWithVar &pv)
-{
-  if (!init_octo_)
-  {
-    new_points_++;
-    temp_points_.push_back(pv);
-    if (temp_points_.size() > points_size_threshold_) { init_octo_tree(); }
-  }
-  else
-  {
-    if (plane_ptr_->is_plane_)
-    {
-      if (update_enable_)
-      {
-        new_points_++;
-        temp_points_.push_back(pv);
-        if (new_points_ > update_size_threshold_)
-        {
-          init_plane(temp_points_, plane_ptr_);
-          new_points_ = 0;
-        }
-        if (temp_points_.size() >= max_points_num_)
-        {
-          update_enable_ = false;
-          std::vector<pointWithVar>().swap(temp_points_);
-          new_points_ = 0;
-        }
-      }
-    }
-    else
-    {
-      if (layer_ < max_layer_)
-      {
-        int xyz[3] = {0, 0, 0};
-        if (pv.point_w[0] > voxel_center_[0]) { xyz[0] = 1; }
-        if (pv.point_w[1] > voxel_center_[1]) { xyz[1] = 1; }
-        if (pv.point_w[2] > voxel_center_[2]) { xyz[2] = 1; }
-        int leafnum = 4 * xyz[0] + 2 * xyz[1] + xyz[2];
-        if (leaves_[leafnum] != nullptr) { leaves_[leafnum]->UpdateOctoTree(pv); }
-        else
-        {
-          leaves_[leafnum] = new VoxelOctoTree(max_layer_, layer_ + 1, layer_init_num_[layer_ + 1], max_points_num_, planer_threshold_);
-          leaves_[leafnum]->layer_init_num_ = layer_init_num_;
-          leaves_[leafnum]->voxel_center_[0] = voxel_center_[0] + (2 * xyz[0] - 1) * quater_length_;
-          leaves_[leafnum]->voxel_center_[1] = voxel_center_[1] + (2 * xyz[1] - 1) * quater_length_;
-          leaves_[leafnum]->voxel_center_[2] = voxel_center_[2] + (2 * xyz[2] - 1) * quater_length_;
-          leaves_[leafnum]->quater_length_ = quater_length_ / 2;
-          leaves_[leafnum]->UpdateOctoTree(pv);
-        }
-      }
-      else
-      {
-        if (update_enable_)
-        {
-          new_points_++;
-          temp_points_.push_back(pv);
-          if (new_points_ > update_size_threshold_)
-          {
-            init_plane(temp_points_, plane_ptr_);
-            new_points_ = 0;
-          }
-          if (temp_points_.size() > max_points_num_)
-          {
-            update_enable_ = false;
-            std::vector<pointWithVar>().swap(temp_points_);
-            new_points_ = 0;
-          }
-        }
-      }
-    }
-  }
-}
-
-VoxelOctoTree *VoxelOctoTree::find_correspond(Eigen::Vector3d pw)
-{
-  if (!init_octo_ || plane_ptr_->is_plane_ || (layer_ >= max_layer_)) return this;
-
-  int xyz[3] = {0, 0, 0};
-  xyz[0] = pw[0] > voxel_center_[0] ? 1 : 0;
-  xyz[1] = pw[1] > voxel_center_[1] ? 1 : 0;
-  xyz[2] = pw[2] > voxel_center_[2] ? 1 : 0;
-  int leafnum = 4 * xyz[0] + 2 * xyz[1] + xyz[2];
-
-  // printf("leafnum: %d. \n", leafnum);
-
-  return (leaves_[leafnum] != nullptr) ? leaves_[leafnum]->find_correspond(pw) : this;
-}
-
-VoxelOctoTree *VoxelOctoTree::Insert(const pointWithVar &pv)
-{
-  if ((!init_octo_) || (init_octo_ && plane_ptr_->is_plane_) || (init_octo_ && (!plane_ptr_->is_plane_) && (layer_ >= max_layer_)))
-  {
-    new_points_++;
-    temp_points_.push_back(pv);
-    return this;
-  }
-
-  if (init_octo_ && (!plane_ptr_->is_plane_) && (layer_ < max_layer_))
-  {
-    int xyz[3] = {0, 0, 0};
-    xyz[0] = pv.point_w[0] > voxel_center_[0] ? 1 : 0;
-    xyz[1] = pv.point_w[1] > voxel_center_[1] ? 1 : 0;
-    xyz[2] = pv.point_w[2] > voxel_center_[2] ? 1 : 0;
-    int leafnum = 4 * xyz[0] + 2 * xyz[1] + xyz[2];
-    if (leaves_[leafnum] != nullptr) { return leaves_[leafnum]->Insert(pv); }
-    else
-    {
-      leaves_[leafnum] = new VoxelOctoTree(max_layer_, layer_ + 1, layer_init_num_[layer_ + 1], max_points_num_, planer_threshold_);
-      leaves_[leafnum]->layer_init_num_ = layer_init_num_;
-      leaves_[leafnum]->voxel_center_[0] = voxel_center_[0] + (2 * xyz[0] - 1) * quater_length_;
-      leaves_[leafnum]->voxel_center_[1] = voxel_center_[1] + (2 * xyz[1] - 1) * quater_length_;
-      leaves_[leafnum]->voxel_center_[2] = voxel_center_[2] + (2 * xyz[2] - 1) * quater_length_;
-      leaves_[leafnum]->quater_length_ = quater_length_ / 2;
-      return leaves_[leafnum]->Insert(pv);
-    }
-  }
-  return nullptr;
-}
-
-void VoxelMapManager::StateEstimation(StatesGroup &state_propagat)
-{
-  cross_mat_list_.clear();
-  cross_mat_list_.reserve(feats_down_size_);
-  body_cov_list_.clear();
-  body_cov_list_.reserve(feats_down_size_);
-
-  // build_residual_time = 0.0;
-  // ekf_time = 0.0;
-  // double t0 = omp_get_wtime();
-
-  for (size_t i = 0; i < feats_down_body_->size(); i++)
-  {
-    V3D point_this(feats_down_body_->points[i].x, feats_down_body_->points[i].y, feats_down_body_->points[i].z);
-    if (point_this[2] == 0) { point_this[2] = 0.001; }
-    M3D var;
-    calcBodyCov(point_this, config_setting_.dept_err_, config_setting_.beam_err_, var);
-    body_cov_list_.push_back(var);
-    point_this = extR_ * point_this + extT_;
-    M3D point_crossmat;
-    point_crossmat << SKEW_SYM_MATRX(point_this);
-    cross_mat_list_.push_back(point_crossmat);
-  }
-
-  vector<pointWithVar>().swap(pv_list_);
-  pv_list_.resize(feats_down_size_);
-
-  int rematch_num = 0;
-  MD(DIM_STATE, DIM_STATE) G, H_T_H, I_STATE;
-  G.setZero();
-  H_T_H.setZero();
-  I_STATE.setIdentity();
-
-  bool flg_EKF_inited, flg_EKF_converged, EKF_stop_flg = 0;
-  for (int iterCount = 0; iterCount < config_setting_.max_iterations_; iterCount++)
-  {
-    double total_residual = 0.0;
-    pcl::PointCloud<pcl::PointXYZI>::Ptr world_lidar(new pcl::PointCloud<pcl::PointXYZI>);
-    TransformLidar(state_.rot_end, state_.pos_end, feats_down_body_, world_lidar);
-    M3D rot_var = state_.cov.block<3, 3>(0, 0);
-    M3D t_var = state_.cov.block<3, 3>(3, 3);
-    for (size_t i = 0; i < feats_down_body_->size(); i++)
-    {
-      pointWithVar &pv = pv_list_[i];
-      pv.point_b << feats_down_body_->points[i].x, feats_down_body_->points[i].y, feats_down_body_->points[i].z;
-      pv.point_w << world_lidar->points[i].x, world_lidar->points[i].y, world_lidar->points[i].z;
-
-      M3D cov = body_cov_list_[i];
-      M3D point_crossmat = cross_mat_list_[i];
-      cov = state_.rot_end * cov * state_.rot_end.transpose() + (-point_crossmat) * rot_var * (-point_crossmat.transpose()) + t_var;
-      pv.var = cov;
-      pv.body_var = body_cov_list_[i];
-    }
-    ptpl_list_.clear();
-
-    // double t1 = omp_get_wtime();
-
-    BuildResidualListOMP(pv_list_, ptpl_list_);
-
-    // build_residual_time += omp_get_wtime() - t1;
-
-    for (int i = 0; i < ptpl_list_.size(); i++)
-    {
-      total_residual += fabs(ptpl_list_[i].dis_to_plane_);
-    }
-    effct_feat_num_ = ptpl_list_.size();
-
-    /*** Computation of Measuremnt Jacobian matrix H and measurents covarience
-     * ***/
-    MatrixXd Hsub(effct_feat_num_, 6);
-    MatrixXd Hsub_T_R_inv(6, effct_feat_num_);
-    VectorXd R_inv(effct_feat_num_);
-    VectorXd meas_vec(effct_feat_num_);
-    meas_vec.setZero();
-    for (int i = 0; i < effct_feat_num_; i++)
-    {
-      auto &ptpl = ptpl_list_[i];
-      V3D point_this(ptpl.point_b_);
-      point_this = extR_ * point_this + extT_;
-      V3D point_body(ptpl.point_b_);
-      M3D point_crossmat;
-      point_crossmat << SKEW_SYM_MATRX(point_this);
-
-      /*** get the normal vector of closest surface/corner ***/
-
-      V3D point_world = state_propagat.rot_end * point_this + state_propagat.pos_end;
-      Eigen::Matrix<double, 1, 6> J_nq;
-      J_nq.block<1, 3>(0, 0) = point_world - ptpl_list_[i].center_;
-      J_nq.block<1, 3>(0, 3) = -ptpl_list_[i].normal_;
-
-      M3D var;
-      // V3D normal_b = state_.rot_end.inverse() * ptpl_list_[i].normal_;
-      // V3D point_b = ptpl_list_[i].point_b_;
-      // double cos_theta = fabs(normal_b.dot(point_b) / point_b.norm());
-      // ptpl_list_[i].body_cov_ = ptpl_list_[i].body_cov_ * (1.0 / cos_theta) * (1.0 / cos_theta);
-
-      // point_w cov
-      // var = state_propagat.rot_end * extR_ * ptpl_list_[i].body_cov_ * (state_propagat.rot_end * extR_).transpose() +
-      //       state_propagat.cov.block<3, 3>(3, 3) + (-point_crossmat) * state_propagat.cov.block<3, 3>(0, 0) * (-point_crossmat).transpose();
-
-      // point_w cov (another_version)
-      // var = state_propagat.rot_end * extR_ * ptpl_list_[i].body_cov_ * (state_propagat.rot_end * extR_).transpose() +
-      //       state_propagat.cov.block<3, 3>(3, 3) - point_crossmat * state_propagat.cov.block<3, 3>(0, 0) * point_crossmat;
-
-      // point_body cov
-      var = state_propagat.rot_end * extR_ * ptpl_list_[i].body_cov_ * (state_propagat.rot_end * extR_).transpose();
-
-      double sigma_l = J_nq * ptpl_list_[i].plane_var_ * J_nq.transpose();
-
-      R_inv(i) = 1.0 / (0.001 + sigma_l + ptpl_list_[i].normal_.transpose() * var * ptpl_list_[i].normal_);
-      // R_inv(i) = 1.0 / (sigma_l + ptpl_list_[i].normal_.transpose() * var * ptpl_list_[i].normal_);
-
-      /*** calculate the Measuremnt Jacobian matrix H ***/
-      V3D A(point_crossmat * state_.rot_end.transpose() * ptpl_list_[i].normal_);
-      Hsub.row(i) << VEC_FROM_ARRAY(A), ptpl_list_[i].normal_[0], ptpl_list_[i].normal_[1], ptpl_list_[i].normal_[2];
-      Hsub_T_R_inv.col(i) << A[0] * R_inv(i), A[1] * R_inv(i), A[2] * R_inv(i), ptpl_list_[i].normal_[0] * R_inv(i),
-          ptpl_list_[i].normal_[1] * R_inv(i), ptpl_list_[i].normal_[2] * R_inv(i);
-      meas_vec(i) = -ptpl_list_[i].dis_to_plane_;
-    }
-    EKF_stop_flg = false;
-    flg_EKF_converged = false;
-    /*** Iterative Kalman Filter Update ***/
-    MatrixXd K(DIM_STATE, effct_feat_num_);
-    // auto &&Hsub_T = Hsub.transpose();
-    auto &&HTz = Hsub_T_R_inv * meas_vec;
-    // fout_dbg<<"HTz: "<<HTz<<endl;
-    H_T_H.block<6, 6>(0, 0) = Hsub_T_R_inv * Hsub;
-    // EigenSolver<Matrix<double, 6, 6>> es(H_T_H.block<6,6>(0,0));
-    MD(DIM_STATE, DIM_STATE) &&K_1 = (H_T_H.block<DIM_STATE, DIM_STATE>(0, 0) + state_.cov.block<DIM_STATE, DIM_STATE>(0, 0).inverse()).inverse();
-    G.block<DIM_STATE, 6>(0, 0) = K_1.block<DIM_STATE, 6>(0, 0) * H_T_H.block<6, 6>(0, 0);
-    auto vec = state_propagat - state_;
-    VD(DIM_STATE)
-    solution = K_1.block<DIM_STATE, 6>(0, 0) * HTz + vec.block<DIM_STATE, 1>(0, 0) - G.block<DIM_STATE, 6>(0, 0) * vec.block<6, 1>(0, 0);
-    int minRow, minCol;
-    state_ += solution;
-    auto rot_add = solution.block<3, 1>(0, 0);
-    auto t_add = solution.block<3, 1>(3, 0);
-    if ((rot_add.norm() * 57.3 < 0.01) && (t_add.norm() * 100 < 0.015)) { flg_EKF_converged = true; }
-    V3D euler_cur = state_.rot_end.eulerAngles(2, 1, 0);
-
-    /*** Rematch Judgement ***/
-
-    if (flg_EKF_converged || ((rematch_num == 0) && (iterCount == (config_setting_.max_iterations_ - 2)))) { rematch_num++; }
-
-    /*** Convergence Judgements and Covariance Update ***/
-    if (!EKF_stop_flg && (rematch_num >= 2 || (iterCount == config_setting_.max_iterations_ - 1)))
-    {
-      /*** Covariance Update ***/
-      // _state.cov = (I_STATE - G) * _state.cov;
-      state_.cov.block<DIM_STATE, DIM_STATE>(0, 0) =
-          (I_STATE.block<DIM_STATE, DIM_STATE>(0, 0) - G.block<DIM_STATE, DIM_STATE>(0, 0)) * state_.cov.block<DIM_STATE, DIM_STATE>(0, 0);
-      // total_distance += (_state.pos_end - position_last).norm();
-      position_last_ = state_.pos_end;
-
-
-      // VD(DIM_STATE) K_sum  = K.rowwise().sum();
-      // VD(DIM_STATE) P_diag = _state.cov.diagonal();
-      EKF_stop_flg = true;
-    }
-    if (EKF_stop_flg) break;
-  }
-
-  // double t2 = omp_get_wtime();
-  // scan_count++;
-  // ekf_time = t2 - t0 - build_residual_time;
-
-  // ave_build_residual_time = ave_build_residual_time * (scan_count - 1) / scan_count + build_residual_time / scan_count;
-  // ave_ekf_time = ave_ekf_time * (scan_count - 1) / scan_count + ekf_time / scan_count;
-
-  // cout << "[ Mapping ] ekf_time: " << ekf_time << "s, build_residual_time: " << build_residual_time << "s" << endl;
-  // cout << "[ Mapping ] ave_ekf_time: " << ave_ekf_time << "s, ave_build_residual_time: " << ave_build_residual_time << "s" << endl;
 }
 
 void VoxelMapManager::TransformLidar(const Eigen::Matrix3d rot, const Eigen::Vector3d t, const PointCloudXYZI::Ptr &input_cloud,
@@ -565,16 +108,6 @@ void VoxelMapManager::BuildVoxelMap()
   }
 }
 
-V3F VoxelMapManager::RGBFromVoxel(const V3D &input_point)
-{
-  const auto position = pointToVoxel(input_point, config_setting_.max_voxel_size_);
-  int64_t ind = position.x + position.y + position.z;
-  uint k((ind + 100000) % 3);
-  V3F RGB((k == 0) * 255.0, (k == 1) * 255.0, (k == 2) * 255.0);
-  // cout<<"RGB: "<<RGB.transpose()<<endl;
-  return RGB;
-}
-
 void VoxelMapManager::UpdateVoxelMap(const std::vector<pointWithVar> &input_points)
 {
   float voxel_size = config_setting_.max_voxel_size_;
@@ -605,24 +138,16 @@ void VoxelMapManager::UpdateVoxelMap(const std::vector<pointWithVar> &input_poin
 
 void VoxelMapManager::BuildResidualListOMP(std::vector<pointWithVar> &pv_list, std::vector<PointToPlane> &ptpl_list)
 {
-  int max_layer = config_setting_.max_layer_;
   double voxel_size = config_setting_.max_voxel_size_;
-  double sigma_num = config_setting_.sigma_num_;
-  std::mutex mylock;
   ptpl_list.clear();
   std::vector<PointToPlane> all_ptpl_list(pv_list.size());
-  std::vector<bool> useful_ptpl(pv_list.size());
-  std::vector<size_t> index(pv_list.size());
-  for (size_t i = 0; i < index.size(); ++i)
-  {
-    index[i] = i;
-    useful_ptpl[i] = false;
-  }
+  // Independent bytes allow per-point writes without a shared bit proxy.
+  std::vector<std::uint8_t> useful_ptpl(pv_list.size());
   #ifdef MP_EN
     omp_set_num_threads(num_threads);
     #pragma omp parallel for
   #endif
-  for (int i = 0; i < index.size(); i++)
+  for (int i = 0; i < pv_list.size(); i++)
   {
     pointWithVar &pv = pv_list[i];
     const auto position = pointToVoxel(pv.point_w, voxel_size);
@@ -648,16 +173,8 @@ void VoxelMapManager::BuildResidualListOMP(std::vector<pointWithVar> &pv_list, s
       }
       if (is_sucess)
       {
-        mylock.lock();
         useful_ptpl[i] = true;
         all_ptpl_list[i] = single_ptpl;
-        mylock.unlock();
-      }
-      else
-      {
-        mylock.lock();
-        useful_ptpl[i] = false;
-        mylock.unlock();
       }
     }
   }
@@ -713,13 +230,11 @@ void VoxelMapManager::build_single_residual(pointWithVar &pv, const VoxelOctoTre
       }
       else
       {
-        // is_sucess = false;
         return;
       }
     }
     else
     {
-      // is_sucess = false;
       return;
     }
   }
@@ -832,34 +347,24 @@ void VoxelMapManager::mapSliding()
     return;
   }
 
-  //get global id now
   last_slide_position = position_last_;
-  double t_sliding_start = omp_get_wtime();
   const auto position = pointToVoxel(position_last_, config_setting_.max_voxel_size_);
   clearMemOutOfMap(position.x + config_setting_.half_map_size, position.x - config_setting_.half_map_size,
                     position.y + config_setting_.half_map_size, position.y - config_setting_.half_map_size,
                     position.z + config_setting_.half_map_size, position.z - config_setting_.half_map_size);
-  double t_sliding_end = omp_get_wtime();
 }
 
 void VoxelMapManager::clearMemOutOfMap(const int& x_max,const int& x_min,const int& y_max,const int& y_min,const int& z_max,const int& z_min )
 {
-  int delete_voxel_cout = 0;
-  // double delete_time = 0;
-  // double last_delete_time = 0;
   for (auto it = voxel_map_.begin(); it != voxel_map_.end(); )
   {
     const VOXEL_LOCATION& loc = it->first;
     bool should_remove = loc.x > x_max || loc.x < x_min || loc.y > y_max || loc.y < y_min || loc.z > z_max || loc.z < z_min;
     if (should_remove){
-      // last_delete_time = omp_get_wtime();
       delete it->second;
       it = voxel_map_.erase(it);
-      // delete_time += omp_get_wtime() - last_delete_time;
-      delete_voxel_cout++;
     } else {
       ++it;
     }
   }
-  // std::cout<<RED<<"[DEBUG]: Delete "<<delete_voxel_cout<<" voxels using "<<delete_time<<" s"<<RESET<<"\n";
 }

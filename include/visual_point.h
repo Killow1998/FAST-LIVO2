@@ -38,11 +38,11 @@ public:
 
   VisualPoint(const Vector3d &pos);
   ~VisualPoint();
-  void findMinScoreFeature(const Vector3d &framepos, Feature *&ftr) const;
+  void findMinScoreFeature(Feature *&ftr) const;
   void deleteNonRefPatchFeatures();
   void deleteFeatureRef(Feature *ftr);
   void addFrameRef(Feature *ftr);
-  bool getCloseViewObs(const Vector3d &pos, Feature *&obs, const Vector2d &cur_px) const;
+  bool getCloseViewObs(const Vector3d &pos, Feature *&obs) const;
 };
 
 #endif // LIVO_POINT_H_

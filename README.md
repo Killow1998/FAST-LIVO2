@@ -52,6 +52,9 @@ This branch uses one ROS-independent C++ Mapper with thin Noetic and Humble adap
 
 Recorded four-core tests cover simulation mapping and Avia/MID360 continuation with cross-ROS reload. Avia continuation requires the accompanying N3M tracking repair and regenerated maps; historical corrupted maps are not repaired automatically. The validation record includes accuracy, resource costs and remaining hardware limits.
 
+The [cleanup qualification](docs/n3m_frontend.md#structural-cleanup--2026-10-28)
+records the shared-core simplification, before/after replay and both ROS regressions.
+
 ## 3. Build
 
 Use the standalone `core/`, selected `noetic/`, or `humble/` entry described in [docs/build.md](docs/build.md). Keep Debug, Release and the two ROS distributions in separate build prefixes. Existing installed frontends and navigation frozen libraries need not be replaced for validation.

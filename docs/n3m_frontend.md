@@ -65,7 +65,7 @@ The change adds 67 core/logging lines, one private mathematical helper and one a
 
 Plane-only registration and a six-DoF projection were rejected by their recorded probes (approximately 71 and 86 cm peaks). Source-only translation support initially passed frozen pairs but failed raw frontend replay with approximately 0.9 m jumps: a newly visible surface may be absent from the reference map. Only matched geometry is retained in the implementation.
 
-### Final native-node matrix
+### Repair qualification matrix
 
 Both ROS adapters replay the original LiDAR, IMU and images through the unchanged final FAST-LIVO2 binaries. Noetic runs in its Focal Docker environment; Humble runs natively. Atlas uses the current production default, enabled. Four cases per input cover both continuation directions and both cross-ROS reload directions. The values are maximum position errors in cm.
 
@@ -107,4 +107,84 @@ Workspace evidence is under `build/fast_livo2/integration/`: `qualification.json
 
 The earlier eight-run mapping matrix preceded the no-observer queue guard and optional COLMAP path correction. These do not execute in that matrix's configuration; targeted native/export checks plus both final builds and preprocessing regressions verify the later changes. The final 12-run continuation/reload matrix uses the unchanged final frontend binaries and the repaired backend. Standalone Release builds, installation and an external `find_package(fast_livo2_core)` consumer pass without ROS. The near-wall sanitizer result is a full native replay; the ASan-only Eigen allocation setting matches the system PCL ABI and is not a production flag.
 
-The simulator camera is an ideal 320×240 pinhole, not a calibrated physical D435i optical/noise model. No RK3588 deployment, general 10 cm guarantee, or reliable camera-disabled corridor localization is claimed. The tested regenerated-map paths pass; the historical corrupted map requires rebuilding. This is a local development candidate; no remote publication or installed-library replacement is part of this stage.
+The simulator camera is an ideal 320×240 pinhole, not a calibrated physical D435i optical/noise model. No RK3588 deployment, general 10 cm guarantee, or reliable camera-disabled corridor localization is claimed. The tested regenerated-map paths pass; the historical corrupted map requires rebuilding. The initial integration and repair stages used local candidates and did not replace installed libraries.
+
+## Structural cleanup — 2026-10-28
+
+The cleanup starts from FAST-LIVO2 `3bdc4ca` and N3M `dda1c11`. It preserves
+the public interfaces, sensor parameters, numerical equations and acceptance
+gates. Timestamp and payload now share a queue entry. Voxel geometry, map
+maintenance and state estimation have separate implementation files; Livox and
+standard point-cloud decoders share the existing dispatcher. Independent byte
+flags replace packed flags and their per-correspondence mutex. Unused residual
+indexing, an unused matrix allocation, obsolete APIs and disabled code are
+removed. No new worker, cache or defensive wrapper is introduced.
+
+Noetic uses the existing Livox driver's generated message headers. Both message
+MD5s match the removed copies. N3M shares one 167-field table between both ROS
+loaders and canonical configuration records. Its existing configuration E2E
+caught a missing empty-map-directory fallback during refactoring; that behavior
+was restored in both adapters and verified through their native parameter APIs.
+
+Excluding documentation and third-party sources, FAST-LIVO2 removes 903 net
+code lines, including 550 generated message-header lines; N3M removes 455.
+The largest FAST-LIVO2 algorithm source is 452 lines. The subsequent removal of
+old comments produces identical standalone, Humble and Noetic core binaries.
+
+### Fixed-input ablation
+
+The original and cleaned native cores replay the same raw files on CPUs
+`0,2,4,6`, with four workers and writable bounded logs. CPU is total process CPU
+seconds, including decoding and all worker threads. Each row is one A/B sample,
+not a hardware performance guarantee.
+
+| Input | CPU seconds, before → after | Peak RSS MiB, before → after | Output comparison |
+| --- | ---: | ---: | --- |
+| Avia normal distance | 17.88 → 11.88 | 215.15 → 218.73 | 1,069 poses, byte-identical |
+| Avia near wall | 17.67 → 11.89 | 220.47 → 219.53 | 1,093 poses, byte-identical |
+| MID360 | 21.30 → 13.29 | 223.98 → 230.23 | 1,069 poses, maximum position difference 6.26 mm |
+
+The unmodified MID360 baseline itself varies by up to 6.13 mm across repeated
+runs. The final MID360 candidate is not byte-identical: truth peak error is
+1.6179 cm in both versions, position RMSE changes from 0.48093 to 0.48070 cm,
+and angular RMSE does not increase. No general accuracy gain is inferred from
+these small differences. Camera-disabled LIO and camera/IMU-disabled LO retain
+byte-identical outputs, with 1,069 and 1,073 poses respectively. The earlier
+camera-disabled corridor accuracy limitation still applies.
+
+### Integrated regression
+
+The cleaned frontend and backend core repeat all 12 raw-input continuation and
+cross-ROS reload cases. Maximum position errors in cm are:
+
+| Input | Noetic continuation | Humble reload | Humble continuation | Noetic reload |
+| --- | ---: | ---: | ---: | ---: |
+| Avia normal distance | 9.03 | 8.45 | 7.99 | 8.46 |
+| Avia near wall | 6.12 | 5.06 | 5.72 | 5.40 |
+| MID360 | 1.66 | 2.00 | 1.79 | 1.77 |
+
+All cases save and shut down cleanly. Live scheduling changes the selected
+frames and peaks relative to the repair matrix; they are not bitwise trajectory
+comparisons. The later adapter-only restoration of the empty-map-directory
+fallback is covered by native parameter tests; these 12 runs explicitly select
+nonempty output directories. The core binaries are unchanged by that restoration.
+
+N3M's original 14-point A/B produces 4,088 poses, unchanged decisions and locks,
+and a 2.48 cm peak. The two motion routes retain 2,232/3,662 poses, locks at
+frames `[4]` / `[4,1938]`, and peaks of 7.94/3.25 cm. Their pose differences are
+at floating-point rounding scale. Humble passes 69/69 tests; Noetic passes
+67/67. All four preprocessing test builds pass. The complete 1,093-pose
+near-wall ASan/UBSan/LeakSanitizer replay passes.
+
+The 12 ROS runs use 0.127–0.142 frontend CPU seconds per input second. N3M uses
+0.224–0.549; peak RSS including save is at most 314.4 MiB for the frontend and
+256.6 MiB for N3M. RSS is not additive physical RAM. These fixture results do
+not qualify a universal half-core limit or RK3588 deployment.
+
+[Closeout qualification](closeout_20261028.json) records source fingerprints,
+binary identities, all cases and protected-library hashes. Full logs, native
+ablation, parameter checks and sanitizer evidence remain under
+`build/fast_livo2/closeout_20261028/`; the 12 ROS cases are the integration
+directory's `closeout_*` runs. Existing installed/frozen libraries and release
+tags remain unchanged. Publication uses the two repositories' `main` branches;
+this cleanup does not create a new release tag.

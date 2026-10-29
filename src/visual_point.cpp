@@ -12,7 +12,6 @@ which is included as part of this source code package.
 
 #include "visual_point.h"
 #include "feature.h"
-#include <stdexcept>
 #include <vikit/math_utils.h>
 
 VisualPoint::VisualPoint(const Vector3d &pos)
@@ -54,10 +53,9 @@ void VisualPoint::deleteFeatureRef(Feature *ftr)
   }
 }
 
-bool VisualPoint::getCloseViewObs(const Vector3d &framepos, Feature *&ftr, const Vector2d &cur_px) const
+bool VisualPoint::getCloseViewObs(const Vector3d &framepos, Feature *&ftr) const
 {
-  // TODO: get frame with same point of view AND same pyramid level!
-  if (obs_.size() <= 0) return false;
+  if (obs_.empty()) return false;
 
   Vector3d obs_dir(framepos - pos_);
   obs_dir.normalize();
@@ -76,14 +74,6 @@ bool VisualPoint::getCloseViewObs(const Vector3d &framepos, Feature *&ftr, const
   }
   ftr = *min_it;
 
-  // Vector2d ftr_px = ftr->px_;
-  // double pixel_dist = (cur_px-ftr_px).norm();
-
-  // if(pixel_dist > 200)
-  // {
-  //   return false;
-  // }
-
   if (min_cos_angle < 0.5) // assume that observations larger than 60° are useless 0.5
   {
     return false;
@@ -92,7 +82,7 @@ bool VisualPoint::getCloseViewObs(const Vector3d &framepos, Feature *&ftr, const
   return true;
 }
 
-void VisualPoint::findMinScoreFeature(const Vector3d &framepos, Feature *&ftr) const
+void VisualPoint::findMinScoreFeature(Feature *&ftr) const
 {
   auto min_it = obs_.begin();
   float min_score = std::numeric_limits<float>::max();

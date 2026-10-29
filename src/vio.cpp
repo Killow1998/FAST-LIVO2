@@ -14,7 +14,6 @@ which is included as part of this source code package.
 
 VIOManager::VIOManager()
 {
-  // downSizeFilter.setLeafSize(0.2, 0.2, 0.2);
 }
 
 VIOManager::~VIOManager()
@@ -79,7 +78,6 @@ void VIOManager::initializeVIO()
 
   if(raycast_en)
   {
-    // uchar* it = (uchar*)img_test.data;
 
     border_flag.resize(length, 0);
 
@@ -101,25 +99,16 @@ void VIOManager::initializeVIO()
 
         int u = grid_size / 2 + (grid_col - 1) * grid_size;
         int v = grid_size / 2 + (grid_row - 1) * grid_size;
-        // it[ u + v * width ] = 255;
         for (float d_temp = d_min; d_temp <= d_max; d_temp += step)
         {
           V3D xyz;
           xyz = cam->cam2world(u, v);
           xyz *= d_temp / xyz[2];
-          // xyz[0] = (u - cx) / fx * d_temp;
-          // xyz[1] = (v - cy) / fy * d_temp;
-          // xyz[2] = d_temp;
           SamplePointsEachGrid.push_back(xyz);
         }
         rays_with_sample_points.push_back(SamplePointsEachGrid);
       }
     }
-    // rays_with_sample_points[0].capacity(): %d, rays_with_sample_points[0]: %d\n",
-    // rays_with_sample_points.size(), rays_with_sample_points.capacity(),
-    // rays_with_sample_points[0].capacity(), rays_with_sample_points[0].size()); for
-    // cv::imshow("img_test", img_test);
-    // cv::waitKey(1);
   }
 
   if(colmap_output_en)
@@ -172,16 +161,6 @@ void VIOManager::resetGrid()
 
   total_points = 0;
 }
-
-// void VIOManager::resetRvizDisplay()
-// {
-  // sub_map_ray.clear();
-  // sub_map_ray_fov.clear();
-  // visual_sub_map_cur.clear();
-  // visual_converged_point.clear();
-  // map_cur_frame.clear();
-  // sample_points.clear();
-// }
 
 void VIOManager::updateFrameState(StatesGroup state)
 {

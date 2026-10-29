@@ -45,12 +45,12 @@ struct Mapper::Impl {
   bool rebase_propagation = false;
   size_t frame_count = 0, image_count = 0;
   std::string diagnostic, root_directory;
-  std::deque<Cloud::Ptr> lidar_buffer;
-  std::deque<double> lidar_times;
+  struct LidarInput { double stamp; Cloud::Ptr cloud; };
+  struct ImageInput { double stamp; cv::Mat image; };
+  std::deque<LidarInput> lidar_buffer;
   std::deque<ImuSample::ConstPtr> imu_buffer;
   std::deque<ImuSample> propagation_buffer;
-  std::deque<cv::Mat> image_buffer;
-  std::deque<double> image_times;
+  std::deque<ImageInput> image_buffer;
   std::vector<pointWithVar> points_with_variance;
   Cloud::Ptr undistorted, down_body, down_world, world_for_visual;
   Cloud::Ptr pending_body, pending_color_points, saved_intensity;
