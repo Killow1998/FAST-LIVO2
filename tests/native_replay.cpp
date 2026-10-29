@@ -31,6 +31,8 @@ int main(int argc, char **argv) {
   std::filesystem::create_directories(output);
   std::ofstream trajectory(output / "frontend.csv");
   trajectory << std::setprecision(17);
+  std::ofstream twist(output / "twist.csv");
+  twist << std::setprecision(17);
   std::vector<Record> lidar, images;
   std::vector<Event> events;
   std::ifstream cloud_file(root / "lidar.bin", std::ios::binary), image_file(root / "camera.bin", std::ios::binary);
@@ -117,6 +119,10 @@ int main(int argc, char **argv) {
       trajectory << fast_livo2::seconds(pose.stamp_ns) << ',' << pose.position.x() << ',' << pose.position.y()
                  << ',' << pose.position.z() << ',' << pose.orientation.x() << ',' << pose.orientation.y()
                  << ',' << pose.orientation.z() << ',' << pose.orientation.w() << '\n';
+      twist << fast_livo2::seconds(pose.stamp_ns) << ',' << pose.linear_velocity_body.x()
+            << ',' << pose.linear_velocity_body.y() << ',' << pose.linear_velocity_body.z()
+            << ',' << pose.angular_velocity_body.x() << ',' << pose.angular_velocity_body.y()
+            << ',' << pose.angular_velocity_body.z() << '\n';
       ++frames;
     }
   }

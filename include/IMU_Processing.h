@@ -50,7 +50,7 @@ public:
 
   std::string report;
   double IMU_mean_acc_norm;
-  const V3D &angularVelocity() const { return angvel_last; }
+  const V3D &latestAngularMeasurement() const { return last_imu->angular_velocity; }
 
   V3D cov_acc;
   V3D cov_gyr;

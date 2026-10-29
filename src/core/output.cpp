@@ -5,8 +5,8 @@
 #include <sstream>
 
 namespace fast_livo2 {
-void Mapper::Impl::makeOutput(FrameOutput &out) {
-  out.odometry = odometry(measures.last_lio_update_time, state);
+void Mapper::Impl::makeOutput(FrameOutput &out, const V3D &angular_measurement) {
+  out.odometry = odometry(measures.last_lio_update_time, state, angular_measurement);
   out.body_cloud = std::move(pending_body);
   out.planes.swap(pending_planes);
   out.effect_cloud = std::move(pending_effect);

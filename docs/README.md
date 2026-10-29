@@ -12,6 +12,7 @@ from the project homepage.
 | [Changes and N3M integration](n3m_frontend.md) | Correctness/memory repairs, accuracy and resource comparisons, continuation and reload results |
 | [Initial integration qualification](qualification_20261028.json) | Machine-readable identities and measurements before the final cleanup |
 | [Cleanup qualification](closeout_20261028.json) | Final source/binary fingerprints, fixed-input comparisons, ROS tests and remaining limits |
+| [Odometry output qualification](odometry_contract_20261029.json) | Angular-rate semantics, sensor modes and four-core fixed-input comparisons |
 | [Sensor and camera configurations](../config/) | Example inputs for the original recorded sensor setups |
 | [Public Mapper API](../include/fast_livo2/mapper.h) | Embedding the estimator without ROS |
 | [Upstream project and research](upstream.md) | Original authors, papers, videos, devices, datasets and calibration resources |

@@ -19,10 +19,10 @@ struct Mapper::Impl {
   FrameOutput process();
   void lidarUpdate();
   void visualUpdate();
-  void makeOutput(FrameOutput &out);
+  void makeOutput(FrameOutput &out, const V3D &angular_measurement);
   void saveArtifacts(const FrameOutput &out);
   void finish();
-  Odometry odometry(double stamp, const StatesGroup &state) const;
+  Odometry odometry(double stamp, const StatesGroup &state, const V3D &angular_measurement) const;
   void propagateImu(const ImuSample &sample);
 
   const Config config;

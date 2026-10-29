@@ -102,8 +102,7 @@ void Mapper::Impl::propagateImu(const ImuSample &sample) {
     propagated.vel_end += world_acceleration * dt;
     propagation_time = current.seconds();
   }
-  auto out = odometry(propagation_time, propagated);
-  out.angular_velocity_body = sample.angular_velocity - propagated.bias_g;
+  const auto out = odometry(propagation_time, propagated, sample.angular_velocity);
   observer(out);
 }
 } // namespace fast_livo2

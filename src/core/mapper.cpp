@@ -121,13 +121,14 @@ Mapper::Impl::Impl(const Config &value, OdometryObserver callback)
                     " camera=" + config.camera.model + " mode=" + std::to_string(mode));
 }
 
-Odometry Mapper::Impl::odometry(double stamp, const StatesGroup &s) const {
+Odometry Mapper::Impl::odometry(double stamp, const StatesGroup &s, const V3D &angular_measurement) const {
   Odometry out;
   out.stamp_ns = std::llround(stamp * 1e9);
   out.position = s.pos_end;
   out.orientation = Eigen::Quaterniond(s.rot_end);
   out.linear_velocity_body = s.rot_end.transpose() * s.vel_end;
-  out.angular_velocity_body = p_imu->angularVelocity();
+  // The no-IMU constant-motion model stores angular velocity in this state block.
+  out.angular_velocity_body = config.imu_en ? V3D(angular_measurement - s.bias_g) : s.bias_g;
   Eigen::Matrix<double, 6, 6> covariance;
   covariance.topLeftCorner<3, 3>() = s.cov.block<3, 3>(3, 3);
   covariance.topRightCorner<3, 3>() = s.cov.block<3, 3>(3, 0) * s.rot_end.transpose();
@@ -174,13 +175,14 @@ FrameOutput Mapper::Impl::process() {
     if (pending_body) {
       visualUpdate();
       out.status = FrameStatus::Mapped;
-      makeOutput(out);
+      makeOutput(out, p_imu->latestAngularMeasurement());
     } else out.status = FrameStatus::Skipped;
   } else if (!undistorted->empty()) {
     lidarUpdate();
     last_lio_seconds = omp_get_wtime() - started;
     out.status = mode == LIVO ? FrameStatus::LidarUpdated : FrameStatus::Mapped;
-    if (out.status == FrameStatus::Mapped) makeOutput(out);
+    if (out.status == FrameStatus::Mapped)
+      makeOutput(out, p_imu->latestAngularMeasurement());
   } else out.status = FrameStatus::Skipped;
   out.diagnostic.swap(diagnostic);
   if (out.status == FrameStatus::Mapped) {

@@ -1,0 +1,294 @@
+{
+  "date": "2026-10-29",
+  "baseline_commit": "1d3cf75",
+  "scope": "Correct scan angular-rate output using current bias; retain IMU prediction values and publish the no-IMU model angular state directly. No estimator update or noise parameter change.",
+  "cpu_affinity": [
+    0,
+    2,
+    4,
+    6
+  ],
+  "ctest": {
+    "humble": [
+      1,
+      1
+    ],
+    "noetic": [
+      1,
+      1
+    ]
+  },
+  "validation_scope": "Native C++ fixed-input replay binaries built by both ROS toolchains; not a new full ROS transport/continuation matrix.",
+  "known_mid360_repeat_variation_reference": "build/fast_livo2/closeout_20261028/mid_variability.json",
+  "consultation": {
+    "requested_model": "claude-opus-5-5",
+    "requested_effort": "high",
+    "reported_canonical_model": "claude-opus-5-5",
+    "source_review_authorized_by_user": true,
+    "finding": "No-IMU mode uses bias_g as angular velocity, not gyro bias. Confirmed in Forward_without_imu and handled explicitly.",
+    "source_timing_review": "Latest saved IMU sample is at or before output-state time; VIO uses the same image time and retains that sample."
+  },
+  "remaining": [
+    "High-rate predictor does not propagate pose covariance.",
+    "Twist covariance is not supplied; zero defaults are not calibrated uncertainty.",
+    "Camera/IMU-disabled Avia modes retain baseline errors of 4.1\u20136.3 m; functionality regression only, not 10 cm acceptance.",
+    "No new ARM or physical-robot qualification."
+  ],
+  "binaries": {
+    "humble_libfast_livo2_core.so": {
+      "path": "build/fast_livo2/integration/profiles/humble-release/build/fast_livo/libfast_livo2_core.so",
+      "sha256": "6660cc81ef8aa694c5bb02732b50658624ca5d4e89672a03f69c8b2df4ed64a9"
+    },
+    "humble_fastlivo_mapping": {
+      "path": "build/fast_livo2/integration/profiles/humble-release/build/fast_livo/fastlivo_mapping",
+      "sha256": "b42300198eec85b124058f8ebae533a3fb0edce1642dd31069fc6e207b4c9ac5"
+    },
+    "noetic_libfast_livo2_core.so": {
+      "path": "build/fast_livo2/integration/profiles/noetic-release/build/fast_livo/libfast_livo2_core.so",
+      "sha256": "2baeefee5374aeb0107697b58cdcf3e5e7a245f559968ac16f182a2b0bffe2ad"
+    },
+    "noetic_fastlivo_mapping": {
+      "path": "build/fast_livo2/integration/profiles/noetic-release/devel/.private/fast_livo/lib/fast_livo/fastlivo_mapping",
+      "sha256": "f32181c73423622bb01e1600994dc5e3373228053bc3d754c8efbfa789f35663"
+    }
+  },
+  "local_evidence": "build/odometry_contract_20261029/livo",
+  "result_hashes": {
+    "native_comparison.json": "9bac24bbe4f0638e30cf543dc27f7e1337e3953a0ec27a67801a1a451eb18959",
+    "truth_and_twist.json": "2e9711fb9f945134fbc687aa8c3dabbe284cff96eb9600045602d3ec977b1db7",
+    "humble_ctest.log": "e1581a842d9f3991bbd8f8fc826ff8f72d81d489f25218f23b75089b01c5e35d",
+    "noetic_ctest.log": "faa2c3c21d414fbcd0cd370acead723af9dd6eb529b58cc53d64496e9748225f"
+  },
+  "replay_comparisons": [
+    {
+      "ros": "humble",
+      "case": "avia_normal_range",
+      "frames": 1069,
+      "trajectory_byte_identical": true,
+      "maximum_position_delta_m": 0.0,
+      "position_rmse_m_before_after": [
+        0.051043329503715144,
+        0.051043329503715144
+      ],
+      "position_max_m_before_after": [
+        0.09382933897602502,
+        0.09382933897602502
+      ],
+      "turn_rate_rmse_rad_s_before_after": [
+        0.019541689118470804,
+        9.655560227077225e-05
+      ]
+    },
+    {
+      "ros": "humble",
+      "case": "avia_textured_final",
+      "frames": 1093,
+      "trajectory_byte_identical": true,
+      "maximum_position_delta_m": 0.0,
+      "position_rmse_m_before_after": [
+        0.03186714086461927,
+        0.03186714086461927
+      ],
+      "position_max_m_before_after": [
+        0.05415176202567679,
+        0.05415176202567679
+      ],
+      "turn_rate_rmse_rad_s_before_after": [
+        0.0185963287279713,
+        0.00011571022826977796
+      ]
+    },
+    {
+      "ros": "humble",
+      "case": "mid360_normal_range",
+      "frames": 1069,
+      "trajectory_byte_identical": true,
+      "maximum_position_delta_m": 0.0,
+      "position_rmse_m_before_after": [
+        0.004808580782099613,
+        0.004808580782099613
+      ],
+      "position_max_m_before_after": [
+        0.01617911513707417,
+        0.01617911513707417
+      ],
+      "turn_rate_rmse_rad_s_before_after": [
+        0.019539779792845182,
+        3.3941395157292005e-05
+      ]
+    },
+    {
+      "ros": "humble",
+      "case": "lio_only",
+      "frames": 1069,
+      "trajectory_byte_identical": true,
+      "maximum_position_delta_m": 0.0,
+      "position_rmse_m_before_after": [
+        2.9142078113309546,
+        2.9142078113309546
+      ],
+      "position_max_m_before_after": [
+        4.282321096215932,
+        4.282321096215932
+      ],
+      "turn_rate_rmse_rad_s_before_after": [
+        0.01954359934668458,
+        0.0002495698222527423
+      ]
+    },
+    {
+      "ros": "humble",
+      "case": "lo_only",
+      "frames": 1073,
+      "trajectory_byte_identical": true,
+      "maximum_position_delta_m": 0.0,
+      "position_rmse_m_before_after": [
+        4.331445845495243,
+        4.331445845495243
+      ],
+      "position_max_m_before_after": [
+        6.299224296114822,
+        6.299224296114822
+      ],
+      "turn_rate_rmse_rad_s_before_after": [
+        0.5033257033222506,
+        0.3871548804485862
+      ]
+    },
+    {
+      "ros": "humble",
+      "case": "mid_repeat",
+      "frames": 1069,
+      "trajectory_byte_identical": false,
+      "maximum_position_delta_m": 0.0037452462486951884,
+      "position_rmse_m_before_after": [
+        0.004808580782099613,
+        0.004809965007833343
+      ],
+      "position_max_m_before_after": [
+        0.01617911513707417,
+        0.01617911513707417
+      ],
+      "turn_rate_rmse_rad_s_before_after": [
+        0.019539779792845182,
+        3.3349122842714735e-05
+      ]
+    },
+    {
+      "ros": "noetic",
+      "case": "avia_normal_range",
+      "frames": 1069,
+      "trajectory_byte_identical": true,
+      "maximum_position_delta_m": 0.0,
+      "position_rmse_m_before_after": [
+        0.04148910268345614,
+        0.04148910268345614
+      ],
+      "position_max_m_before_after": [
+        0.08011176791515218,
+        0.08011176791515218
+      ],
+      "turn_rate_rmse_rad_s_before_after": [
+        0.019542139039829907,
+        9.668359216512498e-05
+      ]
+    },
+    {
+      "ros": "noetic",
+      "case": "avia_textured_final",
+      "frames": 1093,
+      "trajectory_byte_identical": true,
+      "maximum_position_delta_m": 0.0,
+      "position_rmse_m_before_after": [
+        0.033918811662024144,
+        0.033918811662024144
+      ],
+      "position_max_m_before_after": [
+        0.05673646059070891,
+        0.05673646059070891
+      ],
+      "turn_rate_rmse_rad_s_before_after": [
+        0.018594368101669125,
+        0.00011378507334856614
+      ]
+    },
+    {
+      "ros": "noetic",
+      "case": "mid360_normal_range",
+      "frames": 1069,
+      "trajectory_byte_identical": false,
+      "maximum_position_delta_m": 1.4870314167681814e-05,
+      "position_rmse_m_before_after": [
+        0.004771114440715866,
+        0.004771113229425993
+      ],
+      "position_max_m_before_after": [
+        0.018001343392743927,
+        0.018001343392743927
+      ],
+      "turn_rate_rmse_rad_s_before_after": [
+        0.01953938270901082,
+        3.711430368559244e-05
+      ]
+    },
+    {
+      "ros": "noetic",
+      "case": "lio_only",
+      "frames": 1069,
+      "trajectory_byte_identical": true,
+      "maximum_position_delta_m": 0.0,
+      "position_rmse_m_before_after": [
+        2.8987465275393167,
+        2.8987465275393167
+      ],
+      "position_max_m_before_after": [
+        4.116402799584954,
+        4.116402799584954
+      ],
+      "turn_rate_rmse_rad_s_before_after": [
+        0.019565023700461932,
+        0.0005043894875814504
+      ]
+    },
+    {
+      "ros": "noetic",
+      "case": "lo_only",
+      "frames": 1073,
+      "trajectory_byte_identical": true,
+      "maximum_position_delta_m": 0.0,
+      "position_rmse_m_before_after": [
+        2.055029322219229,
+        2.055029322219229
+      ],
+      "position_max_m_before_after": [
+        4.135399135839959,
+        4.135399135839959
+      ],
+      "turn_rate_rmse_rad_s_before_after": [
+        0.5033257033222506,
+        0.37272771971691726
+      ]
+    },
+    {
+      "ros": "noetic",
+      "case": "mid_repeat",
+      "frames": 1069,
+      "trajectory_byte_identical": false,
+      "maximum_position_delta_m": 0.00022748758620805992,
+      "position_rmse_m_before_after": [
+        0.004771113239171384,
+        0.00477105420967425
+      ],
+      "position_max_m_before_after": [
+        0.018001343392743927,
+        0.018001343392743927
+      ],
+      "turn_rate_rmse_rad_s_before_after": [
+        0.019539382833665655,
+        3.7110422711362504e-05
+      ]
+    }
+  ],
+  "truth_alignment": "One baseline-first-pose SE3 shared with candidate; no candidate fitting.",
+  "angular_reference": "Latest input IMU at or before output stamp; evaluated during turns. This is output consistency, not independent trajectory accuracy."
+}

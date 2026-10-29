@@ -12,6 +12,36 @@ One `main` contains a ROS-independent C++ Mapper and thin native Noetic/Humble n
 
 The core supports an optional IMU-rate observer. Without an observer it retains no propagation queue. ROS Path is a bounded visualization tail; complete trajectories are optional exports. Runtime logs use bounded asynchronous writing and batch summaries; sensor/map exports are separate opt-in artifacts.
 
+### Angular-velocity output repair — 2026-10-29
+
+Scan outputs now use the latest IMU angular measurement at or before the output
+time, minus the current corrected state's bias. They previously reused the last
+integration interval's average and pre-correction bias. IMU-rate outputs retain
+their existing current-sample calculation. The state owner passes the measurement
+explicitly into output conversion; the output module does not depend on the IMU
+implementation. In no-IMU mode, the constant-motion model stores angular velocity
+in `bias_g`; that estimated rate is published directly, rather than treating it
+as a sensor bias. Both velocities refer to the IMU origin in body coordinates.
+
+Four-core Humble/Noetic builds and feature tests pass. Frozen-input native core
+replays from both ROS toolchains cover Avia, textured Avia, MID360, LIO-only and
+LiDAR-only modes, plus a MID360 repeat. Avia and both sensor-disabled modes retain
+byte-identical trajectories. MID360's repeated runs differ by at most 3.75 mm at
+individual frames; maximum truth error is unchanged and RMSE changes by at most
+0.0014 mm. Prior same-version MID360 variation reached 6.13 mm. This is not a claim
+of bitwise determinism. Against the latest input gyro during turns, the three
+IMU-enabled LIVO fixtures improve angular-rate consistency from about 0.019 rad/s
+RMSE to 0.00003–0.00012 rad/s. This measures output consistency, not a new trajectory
+accuracy gain. The native replay tool also records `twist.csv` for this check.
+
+See [output-contract evidence](odometry_contract_20261029.json). The separate
+high-rate predictor still does not propagate its pose covariance; twist covariance
+is not supplied. Those outputs are not qualified as calibrated uncertainty for
+downstream fusion. On these Avia inputs, disabling camera/IMU also retains the
+old 4.1–6.3 m maximum trajectory errors: those modes passed behavior regression,
+not 10 cm accuracy acceptance. No original installation or navigation frozen
+library was replaced.
+
 ## Corrections and causal checks
 
 - Visual lookup used floor followed by another negative-cell shift, unlike insertion. It missed existing observations and repeatedly stored new map points/images. Insertion and query now share the same voxel convention. Geometric neighbour comparisons also use consistent metre coordinates.
