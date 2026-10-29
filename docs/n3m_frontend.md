@@ -34,13 +34,30 @@ IMU-enabled LIVO fixtures improve angular-rate consistency from about 0.019 rad/
 RMSE to 0.00003–0.00012 rad/s. This measures output consistency, not a new trajectory
 accuracy gain. The native replay tool also records `twist.csv` for this check.
 
-See [output-contract evidence](odometry_contract_20261029.json). The separate
-high-rate predictor still does not propagate its pose covariance; twist covariance
-is not supplied. Those outputs are not qualified as calibrated uncertainty for
-downstream fusion. On these Avia inputs, disabling camera/IMU also retains the
+See [output-contract evidence](odometry_contract_20261029.json). High-rate pose
+covariance propagation is repaired below; twist covariance is still not supplied
+and must not be treated as calibrated velocity uncertainty. On these Avia inputs,
+disabling camera/IMU also retains the
 old 4.1–6.3 m maximum trajectory errors: those modes passed behavior regression,
 not 10 cm accuracy acceptance. No original installation or navigation frozen
 library was replaced.
+
+### High-rate prediction covariance — 2026-10-29
+
+The optional IMU-rate predictor previously published an advanced pose with the
+last correction's covariance. It now advances its own copied P with the same
+transition and process-noise model as scan deskew. `imu_covariance.cpp` owns this
+shared calculation. No predictor covariance is written back into the corrected
+filter state. The no-IMU constant-motion path and all noise parameters are unchanged.
+The private `pose_covariance.h` owns projection to parent-frame position/rotation
+order; a marked, non-diagonal fixture checks all 36 elements in native Noetic and
+Humble Odometry messages, including rotated cross terms.
+
+The analytic test verifies constant-velocity position uncertainty across 200
+steps, anisotropic noise, and disabled estimation flags. Frozen-input replays
+enable the existing high-rate observer and record its actual pose/covariance.
+This fixes state-time consistency; it is not a new sensor-noise calibration or
+a complete twist-uncertainty model. See [qualification and cost measurements](prediction_covariance_20261029.json).
 
 ## Corrections and causal checks
 

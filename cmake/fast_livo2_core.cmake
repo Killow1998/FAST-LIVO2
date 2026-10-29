@@ -24,6 +24,7 @@ add_library(fast_livo2_core SHARED
   ${FAST_LIVO2_ROOT}/src/core/output.cpp
   ${FAST_LIVO2_ROOT}/src/core/runtime_log.cpp
   ${FAST_LIVO2_ROOT}/src/IMU_Processing.cpp
+  ${FAST_LIVO2_ROOT}/src/imu_covariance.cpp
   ${FAST_LIVO2_ROOT}/src/preprocess.cpp
   ${FAST_LIVO2_ROOT}/src/preprocess_livox.cpp
   ${FAST_LIVO2_ROOT}/src/preprocess_pcl.cpp

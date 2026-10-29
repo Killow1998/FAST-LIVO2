@@ -1,3 +1,4 @@
+#include "pose_covariance.h"
 #include "mapper_impl.h"
 #include "IMU_Processing.h"
 #include "preprocess.h"
@@ -129,13 +130,7 @@ Odometry Mapper::Impl::odometry(double stamp, const StatesGroup &s, const V3D &a
   out.linear_velocity_body = s.rot_end.transpose() * s.vel_end;
   // The no-IMU constant-motion model stores angular velocity in this state block.
   out.angular_velocity_body = config.imu_en ? V3D(angular_measurement - s.bias_g) : s.bias_g;
-  Eigen::Matrix<double, 6, 6> covariance;
-  covariance.topLeftCorner<3, 3>() = s.cov.block<3, 3>(3, 3);
-  covariance.topRightCorner<3, 3>() = s.cov.block<3, 3>(3, 0) * s.rot_end.transpose();
-  covariance.bottomLeftCorner<3, 3>() = s.rot_end * s.cov.block<3, 3>(0, 3);
-  covariance.bottomRightCorner<3, 3>() = s.rot_end * s.cov.block<3, 3>(0, 0) * s.rot_end.transpose();
-  for (int row = 0; row < 6; ++row)
-    for (int col = 0; col < 6; ++col) out.covariance[row * 6 + col] = covariance(row, col);
+  out.covariance = poseCovariance(s);
   return out;
 }
 

@@ -96,6 +96,7 @@ void Mapper::Impl::propagateImu(const ImuSample &sample) {
     if (dt <= 0.) continue;
     const V3D acceleration = current.linear_acceleration * G_m_s2 / p_imu->IMU_mean_acc_norm - propagated.bias_a;
     const V3D angular = current.angular_velocity - propagated.bias_g;
+    p_imu->propagateCovariance(propagated, propagated.rot_end, acceleration, angular, dt);
     propagated.rot_end = propagated.rot_end * Exp(angular, dt);
     const V3D world_acceleration = propagated.rot_end * acceleration + propagated.gravity;
     propagated.pos_end += propagated.vel_end * dt + .5 * world_acceleration * dt * dt;

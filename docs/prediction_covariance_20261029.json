@@ -1,0 +1,313 @@
+{
+  "date": "2026-10-29",
+  "baseline_commit": "17b3e50d0929ef3b2d03f8fae0f53f1fd8064cb7",
+  "scope": "Propagate optional high-rate pose covariance with the existing deskew transition/noise model on the copied predictor state; no new sensor model or twist covariance.",
+  "cpu_affinity": [
+    0,
+    2,
+    4,
+    6
+  ],
+  "ctest": {
+    "humble": [
+      2,
+      2
+    ],
+    "noetic": [
+      2,
+      2
+    ],
+    "standalone": [
+      2,
+      2
+    ]
+  },
+  "analytic_coverage": [
+    "200-step constant-velocity closed form",
+    "Rotated anisotropic noise and disabled estimation flags",
+    "All36 entries of non-diagonal covariance in actual ROS1/ROS2 Odometry messages"
+  ],
+  "ownership": "StatesGroup assignment copies P by value. Only input_buffer.cpp accesses propagated; no estimator path reads it back.",
+  "four_core_pairs": 12,
+  "four_core_results": [
+    {
+      "ros": "humble",
+      "case": "avia_normal_range",
+      "frames": 1069,
+      "trajectory_exact": true,
+      "maximum_position_difference_m": 0.0
+    },
+    {
+      "ros": "humble",
+      "case": "avia_textured_final",
+      "frames": 1093,
+      "trajectory_exact": true,
+      "maximum_position_difference_m": 0.0
+    },
+    {
+      "ros": "humble",
+      "case": "mid360_normal_range",
+      "frames": 1069,
+      "trajectory_exact": false,
+      "maximum_position_difference_m": 0.0074081699493765
+    },
+    {
+      "ros": "humble",
+      "case": "lio_only",
+      "frames": 1069,
+      "trajectory_exact": true,
+      "maximum_position_difference_m": 0.0
+    },
+    {
+      "ros": "humble",
+      "case": "lo_only",
+      "frames": 1073,
+      "trajectory_exact": true,
+      "maximum_position_difference_m": 0.0
+    },
+    {
+      "ros": "humble",
+      "case": "mid_repeat",
+      "frames": 1069,
+      "trajectory_exact": false,
+      "maximum_position_difference_m": 0.007103678416051457
+    },
+    {
+      "ros": "noetic",
+      "case": "avia_normal_range",
+      "frames": 1069,
+      "trajectory_exact": true,
+      "maximum_position_difference_m": 0.0
+    },
+    {
+      "ros": "noetic",
+      "case": "avia_textured_final",
+      "frames": 1093,
+      "trajectory_exact": true,
+      "maximum_position_difference_m": 0.0
+    },
+    {
+      "ros": "noetic",
+      "case": "mid360_normal_range",
+      "frames": 1069,
+      "trajectory_exact": false,
+      "maximum_position_difference_m": 1.4871985432008052e-05
+    },
+    {
+      "ros": "noetic",
+      "case": "lio_only",
+      "frames": 1069,
+      "trajectory_exact": true,
+      "maximum_position_difference_m": 0.0
+    },
+    {
+      "ros": "noetic",
+      "case": "lo_only",
+      "frames": 1073,
+      "trajectory_exact": true,
+      "maximum_position_difference_m": 0.0
+    },
+    {
+      "ros": "noetic",
+      "case": "mid_repeat",
+      "frames": 1069,
+      "trajectory_exact": false,
+      "maximum_position_difference_m": 6.281935148633797e-08
+    }
+  ],
+  "final_pairs": [
+    {
+      "ros": "humble",
+      "case": "avia_normal_range",
+      "trajectory_exact": true
+    },
+    {
+      "ros": "humble",
+      "case": "mid_single",
+      "trajectory_exact": true
+    },
+    {
+      "ros": "noetic",
+      "case": "avia_normal_range",
+      "trajectory_exact": true
+    },
+    {
+      "ros": "noetic",
+      "case": "mid_single",
+      "trajectory_exact": true
+    }
+  ],
+  "single_thread_scope": "MID360 numerical ablation only; retains four-CPU affinity, not a four-worker performance result.",
+  "microbenchmark": {
+    "samples": 100000,
+    "cpu_seconds": 0.178521,
+    "us_per_sample": 1.78521,
+    "cores_at_200hz": 0.000357042,
+    "checksum": 0.0101219
+  },
+  "process_costs": [
+    {
+      "case": "humble_avia_normal_range",
+      "cpu_s_before_after": [
+        11.84,
+        11.82
+      ],
+      "peak_rss_mib_before_after": [
+        219.3828125,
+        220.99609375
+      ]
+    },
+    {
+      "case": "humble_avia_textured_final",
+      "cpu_s_before_after": [
+        11.87,
+        11.73
+      ],
+      "peak_rss_mib_before_after": [
+        221.15234375,
+        218.078125
+      ]
+    },
+    {
+      "case": "humble_lio_only",
+      "cpu_s_before_after": [
+        7.590000000000001,
+        7.680000000000001
+      ],
+      "peak_rss_mib_before_after": [
+        135.0234375,
+        134.9140625
+      ]
+    },
+    {
+      "case": "humble_lo_only",
+      "cpu_s_before_after": [
+        10.190000000000001,
+        10.15
+      ],
+      "peak_rss_mib_before_after": [
+        211.671875,
+        211.6328125
+      ]
+    },
+    {
+      "case": "humble_mid360_normal_range",
+      "cpu_s_before_after": [
+        13.06,
+        13.02
+      ],
+      "peak_rss_mib_before_after": [
+        229.59375,
+        223.00390625
+      ]
+    },
+    {
+      "case": "humble_mid_repeat",
+      "cpu_s_before_after": [
+        13.0,
+        13.09
+      ],
+      "peak_rss_mib_before_after": [
+        225.99609375,
+        226.1875
+      ]
+    },
+    {
+      "case": "noetic_avia_normal_range",
+      "cpu_s_before_after": [
+        12.603088000000001,
+        12.445217
+      ],
+      "peak_rss_mib_before_after": [
+        219.05078125,
+        220.7109375
+      ]
+    },
+    {
+      "case": "noetic_avia_textured_final",
+      "cpu_s_before_after": [
+        12.670093,
+        12.756771
+      ],
+      "peak_rss_mib_before_after": [
+        221.63671875,
+        228.6328125
+      ]
+    },
+    {
+      "case": "noetic_lio_only",
+      "cpu_s_before_after": [
+        7.618777,
+        7.819131
+      ],
+      "peak_rss_mib_before_after": [
+        130.8046875,
+        130.109375
+      ]
+    },
+    {
+      "case": "noetic_lo_only",
+      "cpu_s_before_after": [
+        10.230705,
+        10.312372
+      ],
+      "peak_rss_mib_before_after": [
+        192.37109375,
+        191.43359375
+      ]
+    },
+    {
+      "case": "noetic_mid360_normal_range",
+      "cpu_s_before_after": [
+        13.361906,
+        13.382776999999999
+      ],
+      "peak_rss_mib_before_after": [
+        221.82421875,
+        225.05859375
+      ]
+    },
+    {
+      "case": "noetic_mid_repeat",
+      "cpu_s_before_after": [
+        13.727744,
+        13.553804
+      ],
+      "peak_rss_mib_before_after": [
+        222.1953125,
+        224.01171875
+      ]
+    }
+  ],
+  "performance_interpretation": "Small mixed-sign process CPU differences include observer CSV logging; no throughput speedup claimed. Microbenchmark estimates marginal arithmetic cost on Jammy, not ARM.",
+  "accuracy": "Avia and sensor-disabled modes preserve trajectories exactly. Four-worker MID360 is not bitwise deterministic; baseline repeats vary6.16mm, A/B up to7.41mm. Peak truth errors unchanged; candidate RMSE4.809mm lies between baseline repeats4.792 and4.841mm. Single-worker MID360 trajectories and prediction values are exact in both toolchains.",
+  "remaining": [
+    "Complete twist uncertainty is not supplied and its zero-filled default is not calibrated uncertainty. Do not borrow the sensor_msgs/Imu -1 sentinel for nav_msgs/Odometry.",
+    "No-IMU covariance/output behavior is unchanged. Existing disabled-camera/IMU Avia meter-scale drift remains.",
+    "No new ARM or physical-robot qualification."
+  ],
+  "review": "Coz requested direct message-layout verification and MID360 isolation; both were completed. Its suggested -1 twist sentinel and implication that no-IMU covariance changed were not adopted.",
+  "local_evidence": "build/continuous_review_20261029",
+  "binaries": {
+    "humble": {
+      "path": "build/fast_livo2/integration/profiles/humble-release/build/fast_livo/libfast_livo2_core.so",
+      "sha256": "dc789473282b383658496e843fdeb375e14886425277d80cd780583555a4809b",
+      "baseline_sha256": "6660cc81ef8aa694c5bb02732b50658624ca5d4e89672a03f69c8b2df4ed64a9"
+    },
+    "noetic": {
+      "path": "build/fast_livo2/integration/profiles/noetic-release/build/fast_livo/libfast_livo2_core.so",
+      "sha256": "a4a916f2342e4c2d10ef6c835aaf56bf53a092d2d0fe061f4833159fbf88ac0c",
+      "baseline_sha256": "2baeefee5374aeb0107697b58cdcf3e5e7a245f559968ac16f182a2b0bffe2ad"
+    }
+  },
+  "evidence_sha256": {
+    "prediction_comparison_final.json": "280d15a57f250053c5c9b90ce170a58db39d745f4068d1a16e0d16cbaacc643c",
+    "replays/native_comparison.json": "f2ab7b411f1c7899c59e293b872cc1bcbec33cb110cf8aa759604ea125add235",
+    "replays/truth_and_twist.json": "9a17cbfbc53a1381c3cc891b069fc8c6b33444c30e9b5c3f888c23d6d04c1bab",
+    "final_outputs/native_comparison.json": "399fb092bb04e7ec91962cfed52f2bc3510982e9a3b181b914f801b8dc372c70",
+    "covariance_cost.json": "965f0fb9ddf2504dd2150d25cd8cd6f3e07f98c087e59123cb6a32e57b346c23",
+    "final_humble_ctest.log": "2ae1b090be40b775767169fbeaee9a8ede885a81b082811dffc64eaf19b0ef45",
+    "final_noetic_ctest.log": "ff2f4cb1a9fb8b6c7cb11c245509a8a2980d38fae94798b781371e68442ae8ee",
+    "standalone_ctest.log": "4501e42481297c7510d36b9565189c8ad88e0f5f2727fa94a7c36ccc125f2ede"
+  }
+}

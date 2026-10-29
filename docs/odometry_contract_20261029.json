@@ -290,5 +290,8 @@
     }
   ],
   "truth_alignment": "One baseline-first-pose SE3 shared with candidate; no candidate fitting.",
-  "angular_reference": "Latest input IMU at or before output stamp; evaluated during turns. This is output consistency, not independent trajectory accuracy."
+  "angular_reference": "Latest input IMU at or before output stamp; evaluated during turns. This is output consistency, not independent trajectory accuracy.",
+  "subsequent_resolution": {
+    "high_rate_pose_covariance": "prediction_covariance_20261029.json"
+  }
 }

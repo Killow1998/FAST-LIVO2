@@ -15,11 +15,14 @@ struct Record {
 };
 struct Event { uint64_t time; size_t order, index; char kind; };
 int main(int argc, char **argv) {
-  if (argc < 3) { std::cerr << "native_replay DATASET OUTPUT [FRONTEND_YAML]\n"; return 2; }
+  if (argc < 3 || argc > 5 || (argc == 5 && std::string(argv[4]) != "--imu-predictions")) {
+    std::cerr << "native_replay DATASET OUTPUT [FRONTEND_YAML [--imu-predictions]]\n";
+    return 2;
+  }
   const std::filesystem::path root(argv[1]), output(argv[2]);
   const auto config = YAML::LoadFile(argc > 3 ? argv[3] : (root / "frontend.yaml").string());
   const auto camera = YAML::LoadFile((root / "camera.yaml").string());
-  const auto options = fast_livo2::adapter::readConfig(
+  auto options = fast_livo2::adapter::readConfig(
       [&](const char *key, auto &value) {
         YAML::Node field; field.reset(config);
         std::istringstream path(key); std::string component;
@@ -81,7 +84,24 @@ int main(int argc, char **argv) {
   std::sort(events.begin(), events.end(), [](const auto &a, const auto &b) {
     return std::tie(a.time, a.order) < std::tie(b.time, b.order);
   });
-  fast_livo2::Mapper mapper(options.core);
+  std::ofstream predictions;
+  fast_livo2::OdometryObserver observer;
+  if (argc == 5) {
+    options.core.imu_prop_enable = true;
+    predictions.open(output / "imu_predictions.csv");
+    predictions << std::setprecision(17);
+    observer = [&](const fast_livo2::Odometry &pose) {
+      predictions << pose.stamp_ns;
+      for (const auto value : {pose.position.x(), pose.position.y(), pose.position.z(),
+              pose.orientation.x(), pose.orientation.y(), pose.orientation.z(), pose.orientation.w(),
+              pose.linear_velocity_body.x(), pose.linear_velocity_body.y(), pose.linear_velocity_body.z(),
+              pose.angular_velocity_body.x(), pose.angular_velocity_body.y(), pose.angular_velocity_body.z()})
+        predictions << ',' << value;
+      for (const auto value : pose.covariance) predictions << ',' << value;
+      predictions << '\n';
+    };
+  }
+  fast_livo2::Mapper mapper(options.core, observer);
   fast_livo2::LivoxScan scan;
   std::vector<float> xyz;
   std::vector<uint32_t> offsets;

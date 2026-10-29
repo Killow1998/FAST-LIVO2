@@ -225,7 +225,6 @@ void ImuProcess::UndistortPcl(LidarMeasureGroup &lidar_meas, StatesGroup &state_
   /*** forward propagation at each imu point ***/
   V3D acc_imu(acc_s_last), angvel_avr(angvel_last), acc_avr, vel_imu(state_inout.vel_end), pos_imu(state_inout.pos_end);
   M3D R_imu(state_inout.rot_end);
-  MD(DIM_STATE, DIM_STATE) F_x, cov_w;
   double dt, dt_all = 0.0;
   double offs_t;
   double tau;
@@ -278,28 +277,8 @@ void ImuProcess::UndistortPcl(LidarMeasureGroup &lidar_meas, StatesGroup &state_
 
       dt_all += dt;
 
-      /* covariance propagation */
-      M3D acc_avr_skew;
       M3D Exp_f = Exp(angvel_avr, dt);
-      acc_avr_skew << SKEW_SYM_MATRX(acc_avr);
-
-      F_x.setIdentity();
-      cov_w.setZero();
-
-      F_x.block<3, 3>(0, 0) = Exp(angvel_avr, -dt);
-      if (ba_bg_est_en) F_x.block<3, 3>(0, 10) = -Eye3d * dt;
-      F_x.block<3, 3>(3, 7) = Eye3d * dt;
-      F_x.block<3, 3>(7, 0) = -R_imu * acc_avr_skew * dt;
-      if (ba_bg_est_en) F_x.block<3, 3>(7, 13) = -R_imu * dt;
-      if (gravity_est_en) F_x.block<3, 3>(7, 16) = Eye3d * dt;
-
-      if (exposure_estimate_en) cov_w(6, 6) = cov_inv_expo * dt * dt;
-      cov_w.block<3, 3>(0, 0).diagonal() = cov_gyr * dt * dt;
-      cov_w.block<3, 3>(7, 7) = R_imu * cov_acc.asDiagonal() * R_imu.transpose() * dt * dt;
-      cov_w.block<3, 3>(10, 10).diagonal() = cov_bias_gyr * dt * dt; // bias gyro covariance
-      cov_w.block<3, 3>(13, 13).diagonal() = cov_bias_acc * dt * dt; // bias acc covariance
-
-      state_inout.cov = F_x * state_inout.cov * F_x.transpose() + cov_w;
+      propagateCovariance(state_inout, R_imu, acc_avr, angvel_avr, dt);
 
       /* propogation of IMU attitude */
       R_imu = R_imu * Exp_f;
